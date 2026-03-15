@@ -1,0 +1,214 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useState } from "react";
+import {
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+
+export default function Home() {
+
+  const router = useRouter();
+  const [logoutVisible, setLogoutVisible] = useState(false);
+
+  const cards = [
+    { title: "Dashboard", icon: "qr-code", color: "#cb2ca6", route: "/dashboard" },
+    { title: "Department Wise Sales", icon: "newspaper", color: "#3b82f6", route: "/department-wise-sales" },
+    { title: "PayMode BreakUp", icon: "stats-chart", color: "#ef4444", route: "/paymode-breakup" },
+    { title: "Purchase", icon: "archive", color: "#10b981", route: "/purchase" },
+    { title: "Purchase Wise Sales", icon: "bar-chart", color: "#f59e0b", route: "/purchase-wise-sales" },
+    { title: "Vendors Wise Purchase", icon: "logo-usd", color: "#8b5cf6", route: "/vendors-wise-purchase" },
+    { title: "Live Sales", icon: "pulse", color: "#14b8a6", route: "/livesales" },
+    { title: "Invoice", icon: "wallet", color: "#f97316", route: "/invoice" }
+  ];
+
+  const goToPage = (route: string) => {
+    router.push(route as any);
+  };
+
+  return (
+
+    <View style={styles.container}>
+
+      {/* Toolbar */}
+
+      <View style={styles.toolbar}>
+        <Text style={styles.title}>Home</Text>
+
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={() => setLogoutVisible(true)}
+        >
+          <Ionicons name="log-out-outline" size={26} color="white" />
+        </TouchableOpacity>
+
+      </View>
+
+      {/* Cards */}
+
+      <FlatList
+        data={cards}
+        keyExtractor={(item) => item.title}
+        contentContainerStyle={{ padding: 12 }}
+        renderItem={({ item }) => (
+
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => goToPage(item.route)}
+          >
+
+            <View style={styles.cardLeft}>
+              <Ionicons name={item.icon as any} size={28} color={item.color} />
+              <Text style={styles.cardText}>{item.title}</Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={22} color="#999" />
+
+          </TouchableOpacity>
+
+        )}
+      />
+
+      {/* Logout Modal */}
+
+      <Modal visible={logoutVisible} transparent animationType="fade">
+
+        <View style={styles.modalContainer}>
+
+          <View style={styles.modalBox}>
+
+            <Text style={styles.modalTitle}>Logout</Text>
+
+            <Text style={styles.modalText}>
+              Are you sure you want to logout?
+            </Text>
+
+            <View style={styles.modalButtons}>
+
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => setLogoutVisible(false)}
+              >
+                <Text style={{ color: "white" }}>No</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.confirmBtn}
+                onPress={() => {
+                  setLogoutVisible(false);
+                  router.push("/login" as any);
+                }}
+              >
+                <Text style={{ color: "white" }}>Yes</Text>
+              </TouchableOpacity>
+
+            </View>
+
+          </View>
+
+        </View>
+
+      </Modal>
+
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f7ff"
+  },
+
+  toolbar: {
+    height: 60,
+    backgroundColor: "#686868",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16
+  },
+
+  title: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold"
+  },
+
+  logoutBtn: {
+    padding: 10
+  },
+
+  card: {
+    backgroundColor: "white",
+    padding: 30,
+    borderRadius: 12,
+    marginBottom: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    elevation: 3
+  },
+
+  cardLeft: {
+    flexDirection: "row",
+    alignItems: "center"
+  },
+
+  cardText: {
+    marginLeft: 12,
+    fontSize: 16,
+    fontWeight: "600"
+  },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.4)"
+  },
+
+  modalBox: {
+    width: 280,
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10
+  },
+
+  modalText: {
+    marginBottom: 20
+  },
+
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
+
+  cancelBtn: {
+    backgroundColor: "#d22626",
+    padding: 10,
+    borderRadius: 6,
+    width: 80,
+    alignItems: "center"
+  },
+
+  confirmBtn: {
+    backgroundColor: "#19ee19",
+    padding: 10,
+    borderRadius: 6,
+    width: 80,
+    alignItems: "center"
+  }
+
+});
