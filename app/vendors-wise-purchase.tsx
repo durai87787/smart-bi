@@ -32,8 +32,11 @@ headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-FromDate:"2023-03-01",
-ToDate:"2026-03-12"
+// FromDate:"2023-03-01",
+// ToDate:"2026-03-12"
+FromDate: "2023-03-01T00:00:00",
+ToDate: "2026-03-12T00:00:00"
+
 })
 })
 .then(res=>res.json())
@@ -88,7 +91,7 @@ return(
 
 {/* Toolbar */}
 
-<View style={styles.toolbar}>
+{/* <View style={styles.toolbar}>
 
 <TouchableOpacity onPress={()=>router.replace("/home")}> <Ionicons name="arrow-back" size={24} color="white"/> </TouchableOpacity>
 
@@ -98,7 +101,7 @@ Vendors Wise Purchase
 
 <Ionicons name="filter" size={24} color="white"/>
 
-</View>
+</View> */}
 
 {/* Vendor List */}
 

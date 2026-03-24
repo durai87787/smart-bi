@@ -1,3 +1,9 @@
+// import { Stack } from "expo-router";
+
+// export default function RootLayout() {
+//   return <Stack screenOptions={{ headerShown: false }} />;
+// }
+
 // import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 // import { Stack } from 'expo-router';
 // import { StatusBar } from 'expo-status-bar';
@@ -20,5 +26,37 @@
 //       </Stack>
 //       <StatusBar style="auto" />
 //     </ThemeProvider>
+    
 //   );
 // }
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import 'react-native-reanimated';
+
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+
+  return (
+    <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
+      <Stack  screenOptions={{
+          headerStyle: {
+            backgroundColor: "#5b5c5c",   // toolbar color
+          },
+          headerTintColor: "#ffffff",     // icon + back button color
+          // headerTitleAlign: "center",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          }
+        }}
+      >
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="home" options={{ title: "Dashboard" }} /> */}
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      </Stack>
+
+      <StatusBar style="auto" />
+    </ThemeProvider>
+  );
+}

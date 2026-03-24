@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   FlatList,
@@ -23,33 +23,42 @@ export default function Home() {
     { title: "Purchase Wise Sales", icon: "bar-chart", color: "#f59e0b", route: "/purchase-wise-sales" },
     { title: "Vendors Wise Purchase", icon: "logo-usd", color: "#8b5cf6", route: "/vendors-wise-purchase" },
     { title: "Live Sales", icon: "pulse", color: "#14b8a6", route: "/livesales" },
-    { title: "Invoice", icon: "wallet", color: "#f97316", route: "/invoice" }
+    { title: "Invoice", icon: "wallet", color: "#f97316", route: "/invoice" },
+    // { title: "Invoice", icon: "wallet", color: "#f97316", route: "/filter" }
   ];
 
   const goToPage = (route: string) => {
     router.push(route as any);
   };
 
-  return (
+  const confirmLogout = () => {
+    setLogoutVisible(true);
+  };
 
+  const logout = () => {
+    setLogoutVisible(false);
+    router.replace("/login" as any);
+  };
+
+  return (
     <View style={styles.container}>
 
-      {/* Toolbar */}
+      {/* HEADER */}
+      <Stack.Screen
+        options={{
+          title: "Home",
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={confirmLogout}
+              style={{ marginRight: 5, padding: 10 }}
+            >
+              <Ionicons name="log-out-outline" size={24} color="white" />
+            </TouchableOpacity>
+          )
+        }}
+      />
 
-      <View style={styles.toolbar}>
-        <Text style={styles.title}>Home</Text>
-
-        <TouchableOpacity
-          style={styles.logoutBtn}
-          onPress={() => setLogoutVisible(true)}
-        >
-          <Ionicons name="log-out-outline" size={26} color="white" />
-        </TouchableOpacity>
-
-      </View>
-
-      {/* Cards */}
-
+      {/* CARDS */}
       <FlatList
         data={cards}
         keyExtractor={(item) => item.title}
@@ -73,8 +82,7 @@ export default function Home() {
         )}
       />
 
-      {/* Logout Modal */}
-
+      {/* LOGOUT MODAL */}
       <Modal visible={logoutVisible} transparent animationType="fade">
 
         <View style={styles.modalContainer}>
@@ -98,10 +106,7 @@ export default function Home() {
 
               <TouchableOpacity
                 style={styles.confirmBtn}
-                onPress={() => {
-                  setLogoutVisible(false);
-                  router.push("/login" as any);
-                }}
+                onPress={logout}
               >
                 <Text style={{ color: "white" }}>Yes</Text>
               </TouchableOpacity>
@@ -123,25 +128,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f7ff"
-  },
-
-  toolbar: {
-    height: 60,
-    backgroundColor: "#686868",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16
-  },
-
-  title: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold"
-  },
-
-  logoutBtn: {
-    padding: 10
   },
 
   card: {
@@ -196,7 +182,7 @@ const styles = StyleSheet.create({
   },
 
   cancelBtn: {
-    backgroundColor: "#d22626",
+    backgroundColor: "#c12626",
     padding: 10,
     borderRadius: 6,
     width: 80,
@@ -204,7 +190,7 @@ const styles = StyleSheet.create({
   },
 
   confirmBtn: {
-    backgroundColor: "#19ee19",
+    backgroundColor: "#0f8e0f",
     padding: 10,
     borderRadius: 6,
     width: 80,

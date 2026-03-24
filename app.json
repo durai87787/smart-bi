@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "react-app",
+    "name": "Smart BI",
     "slug": "react-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -44,6 +44,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "73d7b1ab-3b28-4235-b079-d039ea73b2a8"
+      }
     }
   }
 }

@@ -4,232 +4,274 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
+  ActivityIndicator
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
 import { BASE_URL } from "./config/api";
+import { Stack } from "expo-router";
 
 type Sales = {
-Label:string;
-HQ:number;
+  Label: string;
+  HQ: number;
 };
 
-export default function LiveSales(){
+export default function LiveSales() {
 
-const [type,setType] = useState("Daily");
-const [data,setData] = useState<Sales[]>([]);
-const [expanded,setExpanded] = useState<number | null>(0);
+  const [type, setType] = useState("Daily");
+  const [data, setData] = useState<Sales[]>([]);
+  const [expanded, setExpanded] = useState<number | null>(0);
 
-const loadSales = () => {
+  // 🔥 NEW STATES
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-fetch(`${BASE_URL}/livesales`,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-LocationCode:null,
-Type:type
-})
-})
-.then(res=>res.json())
-.then(result=>{
-console.log("Sales API:",result);
-setData(result);
-})
-.catch(err=>{
-console.log("API Error:",err);
-});
+  const loadSales = () => {
+console.log('type',type);
 
-};
+    setLoading(true);
+    setError("");
 
-useEffect(()=>{
-loadSales();
-},[type]);
+    fetch(`${BASE_URL}/livesales`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        LocationCode: null,
+        Type: type
+      })
+    })
+      .then(res => res.json())
+      .then(result => {
+        console.log("Sales API:", result);
+        setData(result || []);
+      })
+      .catch(err => {
+        console.log("API Error:", err);
+        setError("Something went wrong");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
-const renderItem = ({item,index}:any) => (
+  };
 
-<View style={styles.card}>
+  useEffect(() => {
+    loadSales();
+  }, [type]);
 
-<TouchableOpacity
-style={styles.cardHeader}
-onPress={()=>setExpanded(expanded===index ? null : index)}
+  const renderItem = ({ item, index }: any) => (
 
->
+    <View style={styles.card}>
 
-<Text style={styles.date}>
-{item.Label}
-</Text>
+      <TouchableOpacity
+        style={styles.cardHeader}
+        onPress={() => setExpanded(expanded === index ? null : index)}>
 
-<Ionicons
-name={expanded===index ? "chevron-up" : "chevron-down"}
-size={20}
-/>
+        <Text style={styles.date}>
+          {item.Label}
+        </Text>
 
-</TouchableOpacity>
+        <Ionicons
+          name={expanded === index ? "chevron-up" : "chevron-down"}
+          size={20}
+        />
 
-{expanded===index && (
+      </TouchableOpacity>
 
-<View>
+      {expanded === index && (
 
-<View style={styles.tableHeader}>
+        <View>
 
-<Text style={styles.col1}>S.No</Text> <Text style={styles.col2}>Location</Text> <Text style={styles.col3}>Amount</Text>
+          <View style={styles.tableHeader}>
+            <Text style={styles.col1}>S.No</Text>
+            <Text style={styles.col2}>Location</Text>
+            <Text style={styles.col3}>Amount</Text>
+          </View>
 
-</View>
+          <View style={styles.tableRow}>
+            <Text style={styles.col1}>1</Text>
+            <Text style={styles.col2}>2G</Text>
+            <Text style={styles.col3}>{item.HQ}</Text>
+          </View>
 
-<View style={styles.tableRow}>
+        </View>
 
-<Text style={styles.col1}>1</Text> <Text style={styles.col2}>2G</Text> <Text style={styles.col3}>{item.HQ}</Text>
+      )}
 
-</View>
+    </View>
 
-</View>
+  );
 
-)}
+  return (
 
-</View>
+    <View style={styles.container}>
 
-);
+      <Stack.Screen
+        options={{
+          title: "Live Sales",
+        }}
+      />
 
-return(
+      <View style={styles.selectRow}>
 
-<View style={styles.container}>
+        <Text style={styles.label}>
+          Select Type:
+        </Text>
 
-{/* Toolbar */}
+        <Picker
+          selectedValue={type}
+          style={styles.picker}
+          onValueChange={(value) => setType(value)}
+        >
+          <Picker.Item label="Daily" value="Daily" />
+          <Picker.Item label="Weekly" value="Weekly" />
+          <Picker.Item label="Monthly" value="Monthly" />
+          <Picker.Item label="Yearly" value="Yearly" />
+        </Picker>
 
-<View style={styles.toolbar}>
+      </View>
 
-<Ionicons name="arrow-back" size={24} color="white"/>
+      {/* 🔥 CONDITIONAL UI */}
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#2c78c4" />
+          <Text style={styles.loadingText}>Loading sales...</Text>
+        </View>
+      ) : error ? (
+        <View style={styles.center}>
+          <Ionicons name="alert-circle-outline" size={60} color="red" />
+          <Text style={styles.errorText}>{error}</Text>
 
-<Text style={styles.title}>
-Live Sales
-</Text>
+          <TouchableOpacity onPress={loadSales} style={styles.retryBtn}>
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : data.length === 0 ? (
+        <View style={styles.center}>
+          <Ionicons name="bar-chart-outline" size={60} color="#ccc" />
+          <Text style={styles.noDataText}>No Data Found</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={data}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderItem}
+        />
+      )}
 
-<View style={{width:24}}/>
+    </View>
 
-</View>
-
-{/* Select Type */}
-
-<View style={styles.selectRow}>
-
-<Text style={styles.label}>
-Select Type:
-</Text>
-
-<Picker
-selectedValue={type}
-style={styles.picker}
-onValueChange={(value)=>setType(value)}
-
->
-
-<Picker.Item label="Daily" value="Daily"/>
-<Picker.Item label="Weekly" value="Weekly"/>
-<Picker.Item label="Monthly" value="Monthly"/>
-<Picker.Item label="Yearly" value="Yearly"/>
-
-</Picker>
-
-</View>
-
-{/* Sales List */}
-
-<FlatList
-data={data}
-keyExtractor={(item,index)=>index.toString()}
-renderItem={renderItem}
-/>
-
-</View>
-
-);
+  );
 
 }
 
 const styles = StyleSheet.create({
 
-container:{
-flex:1,
-backgroundColor:"#f4f6fb"
-},
+  container: {
+    flex: 1,
+    backgroundColor: "#f4f6fb"
+  },
 
-toolbar:{
-height:60,
-backgroundColor: "#686868",
-flexDirection:"row",
-alignItems:"center",
-justifyContent:"space-between",
-paddingHorizontal:15
-},
+  selectRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#eee"
+  },
 
-title:{
-color:"white",
-fontSize:18,
-fontWeight:"bold"
-},
+  label: {
+    fontSize: 16,
+    marginRight: 10
+  },
 
-selectRow:{
-flexDirection:"row",
-alignItems:"center",
-padding:10,
-backgroundColor:"#eee"
-},
+  picker: {
+    flex: 1
+  },
 
-label:{
-fontSize:16,
-marginRight:10
-},
+  card: {
+    backgroundColor: "#e6e6ea",
+    margin: 10,
+    borderRadius: 12,
+    padding: 10
+  },
 
-picker:{
-flex:1
-},
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
 
-card:{
-backgroundColor:"#e6e6ea",
-margin:10,
-borderRadius:12,
-padding:10
-},
+  date: {
+    fontSize: 16,
+    fontWeight: "bold"
+  },
 
-cardHeader:{
-flexDirection:"row",
-justifyContent:"space-between",
-alignItems:"center"
-},
+  tableHeader: {
+    flexDirection: "row",
+    marginTop: 10,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    paddingVertical: 6
+  },
 
-date:{
-fontSize:16,
-fontWeight:"bold"
-},
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 6
+  },
 
-tableHeader:{
-flexDirection:"row",
-marginTop:10,
-borderTopWidth:1,
-borderBottomWidth:1,
-paddingVertical:6
-},
+  col1: {
+    width: "20%"
+  },
 
-tableRow:{
-flexDirection:"row",
-paddingVertical:6
-},
+  col2: {
+    width: "40%"
+  },
 
-col1:{
-width:"20%"
-},
+  col3: {
+    width: "40%",
+    textAlign: "right"
+  },
 
-col2:{
-width:"40%"
-},
+  /* 🔥 NEW STYLES */
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
 
-col3:{
-width:"40%",
-textAlign:"right"
-}
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666"
+  },
+
+  noDataText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#999"
+  },
+
+  errorText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "red"
+  },
+
+  retryBtn: {
+    marginTop: 15,
+    backgroundColor: "#2c78c4",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8
+  },
+
+  retryText: {
+    color: "#fff",
+    fontWeight: "bold"
+  }
 
 });

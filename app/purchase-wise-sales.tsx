@@ -12,270 +12,338 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { BASE_URL } from "./config/api";
 
-type PurchaseItem = {
-DepartmentCode:string;
-DepartmentName:string;
-Total:number;
+type Dept = {
+  DepartmentCode: string;
+  DepartmentName: string;
+  Total: number;
 };
 
-export default function PurchaseWiseSales(){
-
-const router = useRouter();
-
-const [showFilter,setShowFilter] = useState(false);
-
-const [fromDate,setFromDate] = useState("2010-08-12");
-const [toDate,setToDate] = useState("2026-03-10");
-
-const [data,setData] = useState<PurchaseItem[]>([]);
-
-const loadData = () => {
-
-fetch(`${BASE_URL}/dept-purchase`,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-FromDate:fromDate,
-ToDate:toDate,
-loctCode:''
-})
-})
-.then(res=>res.json())
-.then(result=>{
-
-console.log("Purchase Dept:",result);
-
-setData(result);
-
-})
-.catch(err=>{
-console.log("API Error:",err);
-});
-
+type Category = {
+  CategoryCode: string;
+  CategoryName: string;
+  Total: number;
 };
 
-useEffect(()=>{
-loadData();
-},[]);
+type Brand = {
+  BrandCode: string;
+  BrandName: string;
+  Total: number;
+};
 
-return(
+export default function PurchaseWiseSales() {
 
-<View style={styles.container}>
+  const router = useRouter();
 
-{/* Toolbar */}
+  const [showFilter, setShowFilter] = useState(false);
 
-<View style={styles.toolbar}>
+  const [fromDate, setFromDate] = useState("2010-08-12");
+  const [toDate, setToDate] = useState("2026-03-10");
 
-<TouchableOpacity onPress={()=>router.replace("/home")}>
-<Ionicons name="arrow-back" size={24} color="white"/>
-</TouchableOpacity>
+  const [departments, setDepartments] = useState<Dept[]>([]);
+  const [categories, setCategories] = useState<{ [key: string]: Category[] }>({});
+  const [brands, setBrands] = useState<{ [key: string]: Brand[] }>({});
 
-<Text style={styles.title}>
-Purchase Wise Sales
-</Text>
+  const [openDept, setOpenDept] = useState<string | null>(null);
+  const [openCat, setOpenCat] = useState<string | null>(null);
 
-<TouchableOpacity onPress={()=>setShowFilter(!showFilter)}>
-<Ionicons name="filter" size={24} color="white"/>
-</TouchableOpacity>
+  // ===============================
+  // LOAD DEPARTMENTS
+  // ===============================
+  const loadDepartments = async () => {
 
-</View>
+    const res = await fetch(`${BASE_URL}/dept-purchase`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        FromDate: fromDate,
+        ToDate: toDate,
+        loctCode: ""
+      })
+    });
 
-<ScrollView>
+    const data = await res.json();
+    setDepartments(Array.isArray(data) ? data : []);
+  };
 
-{/* Filter Panel */}
+  // ===============================
+  // LOAD CATEGORY
+  // ===============================
+  const loadCategories = async (deptCode: string) => {
 
-{showFilter && (
+    if (openDept === deptCode) {
+      setOpenDept(null);
+      return;
+    }
 
-<View style={styles.filterBox}>
+    const res = await fetch(`${BASE_URL}/purchase-category`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        FromDate: fromDate,
+        ToDate: toDate,
+        loctCode: "",
+        DeptCode: deptCode
+      })
+    });
 
-<View style={styles.dateRow}>
+    const text = await res.text();
+    console.log("CATEGORY RAW:", text);
 
-<TextInput
-style={styles.dateInput}
-value={fromDate}
-onChangeText={setFromDate}
-placeholder="YYYY-MM-DD"
-/>
+    const data = JSON.parse(text);
 
-<TextInput
-style={styles.dateInput}
-value={toDate}
-onChangeText={setToDate}
-placeholder="YYYY-MM-DD"
-/>
+    setCategories(prev => ({
+      ...prev,
+      [deptCode]: Array.isArray(data) ? data : []
+    }));
 
-</View>
+    setOpenDept(deptCode);
+    setOpenCat(null);
+  };
 
-<TouchableOpacity
-style={styles.applyBtn}
-onPress={loadData}
->
+  // ===============================
+  // LOAD BRAND
+  // ===============================
+  const loadBrands = async (deptCode: string, catCode: string) => {
 
-<Text style={{color:"white",fontWeight:"bold"}}>
-Apply Filter
-</Text>
+    if (openCat === catCode) {
+      setOpenCat(null);
+      return;
+    }
 
-</TouchableOpacity>
+    const res = await fetch(`${BASE_URL}/purchase-brand`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        FromDate: fromDate,
+        ToDate: toDate,
+        loctCode: "",
+        DeptCode: deptCode,
+        CatCode: catCode
+      })
+    });
 
-</View>
+    const text = await res.text();
+    console.log("BRAND RAW:", text);
 
-)}
+    const data = JSON.parse(text);
 
-{/* Data Section */}
+    setBrands(prev => ({
+      ...prev,
+      [catCode]: Array.isArray(data) ? data : []
+    }));
 
-{data.length === 0 ? (
+    setOpenCat(catCode);
+  };
 
-<View style={styles.emptyContainer}>
+  useEffect(() => {
+    loadDepartments();
+  }, []);
 
-<Ionicons name="document-text-outline" size={80} color="#bbb" />
+  // ===============================
+  // UI
+  // ===============================
+  return (
+    <View style={styles.container}>
+  <View style={styles.dotContainer}>
+        <View style={[styles.dot, { backgroundColor: "#9ee6fc" }]} />
+        <Text style={styles.text}>Department</Text>
+        <View style={[styles.dot, { backgroundColor: "#c2fbcf" }]} />
+        <Text style={styles.text}>Categories</Text>
+        <View style={[styles.dot, { backgroundColor: "#fbf8da" }]} />
+         <Text style={styles.text}>Brands</Text>
+        </View>
+      <ScrollView>
 
-<Text style={styles.emptyText}>
-No Purchase Data Available
-</Text>
+        {/* FILTER */}
+        {showFilter && (
+          <View style={styles.filterBox}>
+            <View style={styles.dateRow}>
+              <TextInput
+                style={styles.dateInput}
+                value={fromDate}
+                onChangeText={setFromDate}
+              />
+              <TextInput
+                style={styles.dateInput}
+                value={toDate}
+                onChangeText={setToDate}
+              />
+            </View>
 
-{/* <Text style={styles.emptySub}>
-Try changing the filter dates
-</Text> */}
+            <TouchableOpacity style={styles.applyBtn} onPress={loadDepartments}>
+              <Text style={{ color: "white", fontWeight: "bold" }}>
+                Apply Filter
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
-</View>
+        {/* DATA */}
+        {departments.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="document-text-outline" size={80} color="#bbb" />
+            <Text style={styles.emptyText}>No Purchase Data</Text>
+          </View>
+        ) : (
 
-) : (
+          departments.map((dept) => (
 
-data.map((item,index)=>(
+            <View key={dept.DepartmentCode} style={styles.card}>
 
-<View style={styles.card} key={index}>
+              {/* DEPARTMENT */}
+              <TouchableOpacity onPress={() => loadCategories(dept.DepartmentCode)}>
+                <View style={styles.row}>
+                  <Text style={styles.name}>{dept.DepartmentName}</Text>
+                  <Text style={styles.amount}>₹ {dept.Total}</Text>
+                </View>
+              </TouchableOpacity>
 
-<View style={styles.row}>
+              {/* CATEGORY */}
+              {openDept === dept.DepartmentCode &&
+                (categories[dept.DepartmentCode] || []).map((cat) => (
 
-<View>
+                  <View key={cat.CategoryCode} style={styles.subCard}>
 
-<Text style={styles.name}>
-{item.DepartmentName}
-</Text>
+                    <TouchableOpacity
+                      onPress={() =>
+                        loadBrands(dept.DepartmentCode, cat.CategoryCode)
+                      }
+                    >
+                      <View style={styles.row}>
+                        <Text style={styles.subText}>{cat.CategoryName}</Text>
+                        <Text style={styles.amount}>₹ {cat.Total}</Text>
+                      </View>
+                    </TouchableOpacity>
 
-<Text style={styles.code}>
-{item.DepartmentCode}
-</Text>
+                    {/* BRAND */}
+                    {openCat === cat.CategoryCode &&
+                      (brands[cat.CategoryCode] || []).map((brand) => (
 
-</View>
+                        <View key={brand.BrandCode} style={styles.innerCard}>
+                          <View style={styles.row}>
+                            <Text style={styles.innerText}>{brand.BrandName}</Text>
+                            <Text style={styles.amount}>₹ {brand.Total}</Text>
+                          </View>
+                        </View>
 
-<Text style={styles.amount}>
-₹ {item.Total}
-</Text>
+                      ))}
+                  </View>
 
-</View>
+                ))}
+            </View>
 
-</View>
+          ))
 
-))
+        )}
 
-)}
-
-</ScrollView>
-
-</View>
-
-);
-
+      </ScrollView>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
 
-container:{
-flex:1,
-backgroundColor:"#f4f6fb"
-},
+  container: {
+    flex: 1,
+    backgroundColor: "#f4f6fb"
+  },
 
-toolbar:{
-height:60,
-backgroundColor: "#686868",
-flexDirection:"row",
-alignItems:"center",
-justifyContent:"space-between",
-paddingHorizontal:15
-},
+  filterBox: {
+    backgroundColor: "#e9edf7",
+    padding: 15
+  },
 
-title:{
-color:"white",
-fontSize:18,
-fontWeight:"bold"
-},
+  dateRow: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
 
-filterBox:{
-backgroundColor:"#e9edf7",
-padding:15
-},
+  dateInput: {
+    backgroundColor: "white",
+    width: "48%",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc"
+  },
 
-dateRow:{
-flexDirection:"row",
-justifyContent:"space-between"
-},
+  applyBtn: {
+    backgroundColor: "#3b4a8a",
+    marginTop: 15,
+    padding: 12,
+    alignItems: "center",
+    borderRadius: 10
+  },
 
-dateInput:{
-backgroundColor:"white",
-width:"48%",
-padding:12,
-borderRadius:10,
-borderWidth:1,
-borderColor:"#ccc"
-},
+  card: {
+    backgroundColor: "#6fb3c7",
+    margin: 10,
+    padding: 15,
+    borderRadius: 10
+  },
 
-applyBtn:{
-backgroundColor:"#3b4a8a",
-marginTop:15,
-padding:12,
-alignItems:"center",
-borderRadius:10
-},
+  subCard: {
+    marginTop: 10,
+    paddingLeft: 15,
+    borderLeftWidth: 2,
+    borderColor: "#fff"
+  },
 
-card:{
-backgroundColor:"#6fb3c7",
-margin:10,
-padding:18,
-borderRadius:10
-},
+  innerCard: {
+    marginTop: 8,
+    paddingLeft: 25
+  },
 
-row:{
-flexDirection:"row",
-justifyContent:"space-between",
-alignItems:"center"
-},
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
 
-name:{
-fontSize:16,
-fontWeight:"600",
-color:"#fff"
-},
+  name: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff"
+  },
 
-code:{
-color:"#eef"
-},
+  subText: {
+    fontSize: 14,
+    color: "#eef"
+  },
 
-amount:{
-fontWeight:"bold",
-fontSize:16,
-color:"#fff"
-},
+  innerText: {
+    fontSize: 13,
+    color: "#fff"
+  },
 
-emptyContainer:{
-alignItems:"center",
-justifyContent:"center",
-marginTop:80
-},
+  amount: {
+    fontWeight: "bold",
+    color: "#fff"
+  },
 
-emptyText:{
-fontSize:18,
-fontWeight:"600",
-marginTop:10,
-color:"#555"
-},
+  emptyContainer: {
+    alignItems: "center",
+    marginTop: 80
+  },
 
-emptySub:{
-fontSize:14,
-color:"#888",
-marginTop:5
-}
+  emptyText: {
+    fontSize: 18,
+    color: "#555"
+  },
+   dotContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20
+  },
+
+  dot: {
+    width: 15,
+    height: 20,
+    borderRadius: 10,
+    marginHorizontal: 8
+  },
+    text: {
+    fontSize: 16,
+    fontWeight: "500"
+  }
 
 });

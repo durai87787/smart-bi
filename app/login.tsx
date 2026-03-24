@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
 import {
   Alert,
@@ -44,7 +44,7 @@ export default function Login() {
   style={styles.background}
   resizeMode="cover"
 >
-
+ <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.overlay}>
        <Image
   source={require("../assets/unipro_logo_pulse.gif")}
