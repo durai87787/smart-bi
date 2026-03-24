@@ -534,20 +534,7 @@ app.post("/invoice-list", async (req, res) => {
 
 });
 
-////vendors wise purchase
 
-// app.post("/vendor-purchase", async (req,res)=>{
-
-// const {FromDate,ToDate} = req.body;
-
-// const result = await pool.request()
-// .input("FromDate",sql.DateTime,FromDate)
-// .input("ToDate",sql.DateTime,ToDate)
-// .execute("sp_VendorWisePurchase");
-
-// res.json(result.recordset);
-
-// });
 app.post("/vendor-purchase", async (req, res) => {
   try {
     const { FromDate, ToDate } = req.body;
@@ -582,6 +569,11 @@ app.post("/vendor-purchase", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+
+// ================= PORT =================
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
