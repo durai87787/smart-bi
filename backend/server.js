@@ -80,8 +80,8 @@ app.get("/dashboard/buttons", async (req, res) => {
     const request = pool.request();
 
     // 🔥 BEST PRACTICE (no timezone issues)
-    request.input("fromDate1", sql.Date, from);
-    request.input("toDate1", sql.Date, to);
+    request.input("fromDate", sql.Date, from);
+    request.input("toDate", sql.Date, to);
 
     // ✅ Execute SP
     const result = await request.execute(
@@ -100,61 +100,27 @@ app.get("/dashboard/buttons", async (req, res) => {
     });
   }
 });
-// app.get("/dashboard/buttons", async (req, res) => {
-//   try {
 
-//     const { from, to } = req.query;
-
-//     const pool = await sql.connect(config);
-
-//     const request = pool.request();
-
-//     request.input("fromDate", sql.DateTime, new Date(from));
-//     request.input("toDate", sql.DateTime, new Date(to));
-
-//     const result = await request.execute(
-//       "sp_bi_dashboard_button_withoutlive_location_code"
-//     );
-
-//     res.json(result.recordset);
-
-//   } catch (err) {
-
-//     console.error("BUTTON API ERROR:", err);
-
-//     res.status(500).json({
-//       message: "Buttons API failed",
-//       error: err.message
-//     });
-
-//   }
-// });
 
 /* ---------------- PIE CHART ---------------- */
 
 app.get("/dashboard/pie", async (req, res) => {
-
   try {
-
     const { from, to } = req.query;
 
-    // const pool = await connectDB();
     const pool = await poolPromise;
 
     const result = await pool.request()
-      .input("fromDate", sql.DateTime, from)
-      .input("toDate", sql.DateTime, to)
+      .input("from", sql.DateTime, from)   // ✅ FIXED
+      .input("to", sql.DateTime, to)       // ✅ FIXED
       .execute("sp_bi_piChart_withoutlive_location_code");
 
     res.json(result.recordset);
 
   } catch (err) {
-
     console.log("Pie Error:", err);
     res.status(500).json({ error: err.message });
-
   }
-
 });
 
 /* ---------------- BAR CHART ---------------- */
@@ -573,6 +539,8 @@ app.post("/vendor-purchase", async (req, res) => {
 // ================= PORT =================
 
 const PORT = process.env.PORT || 3000;
+
+// const PORT = 3000;
 
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);

@@ -1,170 +1,165 @@
 import React, { useEffect, useState } from "react";
 import {
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  ActivityIndicator
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { BASE_URL } from "./config/api";
 
 type Vendor = {
-Code:string;
-Name:string;
-Total:number;
-GidCount:number;
+  Code: string;
+  Name: string;
+  Total: number;
+  GidCount: number;
 };
 
-export default function VendorsWisePurchase(){
+export default function VendorsWisePurchase() {
 
-const router = useRouter();
+  const router = useRouter();
 
-const [data,setData] = useState<Vendor[]>([]);
+  const [data, setData] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(false);
 
-const loadData = () => {
+  const loadData = () => {
 
-fetch(`${BASE_URL}/vendor-purchase`,{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-// FromDate:"2023-03-01",
-// ToDate:"2026-03-12"
-FromDate: "2023-03-01T00:00:00",
-ToDate: "2026-03-12T00:00:00"
+    setLoading(true);
 
-})
-})
-.then(res=>res.json())
-.then(result=>{
-console.log("Vendor Purchase:",result);
-setData(result);
-})
-.catch(err=>{
-console.log("API Error:",err);
-});
+    fetch(`${BASE_URL}/vendor-purchase`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        FromDate: "2023-03-01T00:00:00",
+        ToDate: "2026-03-12T00:00:00"
+      })
+    })
+      .then(res => res.json())
+      .then(result => {
+        console.log("Vendor Purchase:", result);
+        setData(result || []);
+      })
+      .catch(err => {
+        console.log("API Error:", err);
+        setData([]);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
 
-};
+  useEffect(() => {
+    loadData();
+  }, []);
 
-useEffect(()=>{
-loadData();
-},[]);
+  const renderVendor = ({ item, index }: any) => {
 
-const renderVendor = ({item,index}:any) => {
+    const bgColor = index % 2 === 0 ? "#f4d7a7" : "#e8a9bb";
+    const borderColor = index % 2 === 0 ? "#e6a33a" : "#d4477c";
 
-const bgColor = index % 2 === 0 ? "#f4d7a7" : "#e8a9bb";
-const borderColor = index % 2 === 0 ? "#e6a33a" : "#d4477c";
+    return (
+        
+      <View style={[styles.card, { backgroundColor: bgColor, borderColor }]}>
+        
+        <View style={styles.row}>
+          <Text style={styles.vendorName}>
+            {item.Name}
+          </Text>
 
-return(
+          <Text style={styles.amount}>
+            ₹ {Number(item.Total).toLocaleString()}
+          </Text>
+        </View>
 
-<View style={[styles.card,{backgroundColor:bgColor,borderColor:borderColor}]}>
+        <Text style={styles.count}>
+          {item.GidCount}
+        </Text>
+      </View>
+    );
+  };
 
-<View style={styles.row}>
+  return (
 
-<Text style={styles.vendorName}>
-{item.Name}
-</Text>
+    <View style={styles.container}>
+ <Stack.Screen
+        options={{
+          title: "Vendors Wise Purchase",
+        }}
+      />
+      {loading ? (
 
-<Text style={styles.amount}>
-$ {item.Total}
-</Text>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color="#6366f1" />
+          <Text style={{ marginTop: 10 }}>Loading...</Text>
+        </View>
 
-</View>
+      ) : data.length === 0 ? (
 
-<Text style={styles.count}>
-{item.GidCount}
-</Text>
+        <View style={styles.center}>
+          <Ionicons name="alert-circle-outline" size={40} color="#999" />
+          <Text style={{ marginTop: 10 }}>No data found</Text>
+        </View>
 
-</View>
+      ) : (
 
-);
+        <FlatList
+          data={data}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderVendor}
+        />
 
-};
+      )}
 
-return(
+    </View>
 
-<View style={styles.container}>
-
-{/* Toolbar */}
-
-{/* <View style={styles.toolbar}>
-
-<TouchableOpacity onPress={()=>router.replace("/home")}> <Ionicons name="arrow-back" size={24} color="white"/> </TouchableOpacity>
-
-<Text style={styles.title}>
-Vendors Wise Purchase
-</Text>
-
-<Ionicons name="filter" size={24} color="white"/>
-
-</View> */}
-
-{/* Vendor List */}
-
-<FlatList
-data={data}
-keyExtractor={(item,index)=>index.toString()}
-renderItem={renderVendor}
-/>
-
-</View>
-
-);
-
+  );
 }
 
 const styles = StyleSheet.create({
 
-container:{
-flex:1,
-backgroundColor:"#f4f6fb"
-},
+  container: {
+    flex: 1,
+    backgroundColor: "#f4f6fb"
+  },
 
-toolbar:{
-height:60,
-backgroundColor: "#686868",
-flexDirection:"row",
-alignItems:"center",
-justifyContent:"space-between",
-paddingHorizontal:15
-},
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
 
-title:{
-color:"white",
-fontSize:18,
-fontWeight:"bold"
-},
+  card: {
+    margin: 12,
+    padding: 18,
+    borderRadius: 12,
+    borderWidth: 2
+  },
 
-card:{
-margin:12,
-padding:18,
-borderRadius:12,
-borderWidth:2
-},
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between"
+  },
 
-row:{
-flexDirection:"row",
-justifyContent:"space-between"
-},
+  vendorName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#c57d00"
+  },
 
-vendorName:{
-fontSize:16,
-fontWeight:"bold",
-color:"#c57d00"
-},
+  amount: {
+    fontSize: 16,
+    fontWeight: "bold"
+  },
 
-amount:{
-fontSize:16,
-fontWeight:"bold"
-},
-
-count:{
-marginTop:8,
-fontSize:15
-}
+  count: {
+    marginTop: 8,
+    fontSize: 15
+  }
 
 });

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
@@ -21,6 +22,9 @@ type PaymodeItem = {
 };
 
 export default function PaymodeBreakup() {
+
+  const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
 
   const [data, setData] = useState<PaymodeItem[]>([]);
   const [filteredData, setFilteredData] = useState<PaymodeItem[]>([]);
@@ -111,19 +115,44 @@ const getMonthRange = () => {
 
 
   // 🔥 Load API
-  const loadPaymode = async () => {
-    try {
-      const res = await fetch(`${BASE_URL}/paymode-breakup`);
-      const result = await res.json();
+  // const loadPaymode = async () => {
+  //   try {
+  //     const res = await fetch(`${BASE_URL}/paymode-breakup`);
+  //     const result = await res.json();
 
+  //     setData(result);
+  //     setFilteredData(result);
+
+  //   } catch (err) {
+  //     console.log("API Error:", err);
+  //   }
+  // };
+
+  const loadPaymode = async () => {
+  setLoading(true);
+  setError(null);
+
+  try {
+    const res = await fetch(`${BASE_URL}/paymode-breakup`);
+    const result = await res.json();
+
+    if (result && result.length > 0) {
       setData(result);
       setFilteredData(result);
-
-    } catch (err) {
-      console.log("API Error:", err);
+    } else {
+      setData([]);
+      setFilteredData([]);
     }
-  };
 
+  } catch (err) {
+    console.log("API Error:", err);
+    setError("Failed to load data");
+    setData([]);
+    setFilteredData([]);
+  } finally {
+    setLoading(false);
+  }
+};
   useEffect(() => {
     loadPaymode();
   }, []);
@@ -344,7 +373,11 @@ const getMonthRange = () => {
       )}
 
         {/* 🧾 Cards */}
+
+      
         <View style={styles.cardContainer}>
+
+          
 
           {filteredData.map((item, index) => (
 
@@ -355,6 +388,8 @@ const getMonthRange = () => {
                 { borderLeftColor: getColor(item.Paymode) }
               ]}
             >
+
+              
 
               {/* Top Row */}
               <View style={styles.row}>
@@ -385,9 +420,22 @@ const getMonthRange = () => {
             </View>
 
           ))}
-
+         
         </View>
+  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    
+    {loading ? (
+      <ActivityIndicator size="large" color="#007bff" />
+    ) : error ? (
+      <Text>{error}</Text>
+    ) : filteredData.length === 0 ? (
+      <Text>No data found</Text>
+    ) : (
+      // 👉 Your actual UI (FlatList / Table)
+      <Text></Text>
+    )}
 
+  </View>
       </ScrollView>
 
     </View>

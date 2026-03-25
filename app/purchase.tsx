@@ -184,7 +184,7 @@ export default function Purchase() {
 
                             {/* FROM */}
                             <View style={styles.dateBox}>
-                                <Text style={styles.label}>From</Text>
+                                {/* <Text style={styles.label}>From</Text> */}
 
                                 {Platform.OS === "web" ? (
                                     <input
@@ -221,7 +221,7 @@ export default function Purchase() {
 
                             {/* TO */}
                             <View style={styles.dateBox}>
-                                <Text style={styles.label}>To</Text>
+                                {/* <Text style={styles.label}>To</Text> */}
 
                                 {Platform.OS === "web" ? (
                                     <input

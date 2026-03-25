@@ -123,7 +123,7 @@ export default function DepartmentWiseSales() {
   // ================================
  const loadDepartments = async () => {
   console.log('d', formatDate(fromDate));
-
+  // alert(formatDate(fromDate))
   setLoadingDept(true);   // ✅ ADD
 
   try {
@@ -162,7 +162,7 @@ export default function DepartmentWiseSales() {
   // ================================
   const loadCategories = async (deptCode: string) => {
     console.log('c',formatDate(fromDate),);
-alert(deptCode);
+// alert(deptCode);
 
   if (openDept === deptCode) {
     setOpenDept(null);
@@ -319,7 +319,7 @@ console.log('b',formatDate(fromDate),);
 
   {/* FROM */}
   <View style={styles.dateBox}>
-    <Text style={styles.label}>From</Text>
+    {/* <Text style={styles.label}>From</Text> */}
 
     {Platform.OS === "web" ? (
       <input
@@ -356,7 +356,7 @@ console.log('b',formatDate(fromDate),);
 
   {/* TO */}
   <View style={styles.dateBox}>
-    <Text style={styles.label}>To</Text>
+    {/* <Text style={styles.label}>To</Text> */}
 
     {Platform.OS === "web" ? (
       <input
