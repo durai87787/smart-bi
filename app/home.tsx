@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   FlatList,
   Modal,
@@ -35,10 +36,26 @@ export default function Home() {
     setLogoutVisible(true);
   };
 
-  const logout = () => {
-    setLogoutVisible(false);
-    router.replace("/login" as any);
-  };
+  // const logout = () => {
+  //   setLogoutVisible(false);
+  //   router.replace("/login" as any);
+  // };
+  const logout = async () => {
+  setLogoutVisible(false);
+
+  try {
+    // 🔥 REMOVE USER DATA
+    await AsyncStorage.removeItem("user");
+
+    // 🔥 OPTIONAL: remove token if you stored
+    // await AsyncStorage.removeItem("token");
+
+    router.replace("/login");
+
+  } catch (error) {
+    console.log("LOGOUT ERROR:", error);
+  }
+};
 
   return (
     <View style={styles.container}>

@@ -1,19 +1,18 @@
-import React, { useEffect, useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-import { BASE_URL } from "./config/api";
 import { Stack } from "expo-router";
+import { BASE_URL } from "./config/api";
 
 type PaymodeItem = {
   Paymode: string;
@@ -109,7 +108,7 @@ const getMonthRange = () => {
   const handleApply = () => {
     console.log("From:", formatDate(fromDate));
     console.log("To:", formatDate(toDate));
-   
+   loadPaymode();
     setShowFilter(false);
   };
 
@@ -128,15 +127,55 @@ const getMonthRange = () => {
   //   }
   // };
 
-  const loadPaymode = async () => {
+//   const loadPaymode = async () => {
+//   setLoading(true);
+//   setError(null);
+
+//   try {
+//     const res = await fetch(`${BASE_URL}/paymode-breakup`);
+//     const result = await res.json();
+
+//     if (result && result.length > 0) {
+//       setData(result);
+//       setFilteredData(result);
+//     } else {
+//       setData([]);
+//       setFilteredData([]);
+//     }
+
+//   } catch (err) {
+//     console.log("API Error:", err);
+//     setError("Failed to load data");
+//     setData([]);
+//     setFilteredData([]);
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+const loadPaymode = async () => {
   setLoading(true);
   setError(null);
 
   try {
-    const res = await fetch(`${BASE_URL}/paymode-breakup`);
+    // ✅ format dates (example: YYYY-MM-DD)
+    const from = formatDate(fromDate);
+    const to = formatDate(toDate);
+
+    const res = await fetch(
+      `${BASE_URL}/api/paymode-breakup?from=${from}&to=${to}`
+    );
+
+    // ✅ check response status
+    if (!res.ok) {
+      throw new Error(`Server error: ${res.status}`);
+    }
+
     const result = await res.json();
 
-    if (result && result.length > 0) {
+    console.log("PAYMODE DATA:", result);
+
+    if (Array.isArray(result) && result.length > 0) {
       setData(result);
       setFilteredData(result);
     } else {
@@ -146,6 +185,7 @@ const getMonthRange = () => {
 
   } catch (err) {
     console.log("API Error:", err);
+
     setError("Failed to load data");
     setData([]);
     setFilteredData([]);
@@ -153,6 +193,8 @@ const getMonthRange = () => {
     setLoading(false);
   }
 };
+
+
   useEffect(() => {
     loadPaymode();
   }, []);

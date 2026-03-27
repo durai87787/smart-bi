@@ -485,33 +485,67 @@ app.post("/purchase-brand", async (req, res) => {
 });
 
 /////paymode breakup screen
-
-
-// Paymode Breakup API
-app.get("/paymode-breakup", async (req, res) => {
+app.get("/api/paymode-breakup", async (req, res) => {
   try {
-const pool = await poolPromise;
-    //const pool = await sql.connect(config);   // ✅ fixed here
+    const { from, to } = req.query;
 
-    const result = await pool.request().query(`
-      SELECT Paymode, SUM(Amount) AS TotalAmount
-      FROM vw_POS_PaymodeDetail
-      GROUP BY Paymode
-    `);
+    // ✅ validation
+    if (!from || !to) {
+      return res.status(400).json({
+        message: "from and to dates are required"
+      });
+    }
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("fromDate", sql.DateTime, from)
+      .input("toDate", sql.DateTime, to)
+      .query(`
+        SELECT Paymode, SUM(Amount) AS TotalAmount
+        FROM vw_POS_PaymodeDetail
+        WHERE InvoiceDate BETWEEN @fromDate AND @toDate
+        GROUP BY Paymode
+      `);
 
     res.json(result.recordset);
 
   } catch (err) {
-
     console.error("SQL ERROR:", err);
 
     res.status(500).json({
       message: "Server Error",
       error: err.message
     });
-
   }
 });
+
+// Paymode Breakup API
+// app.get("/paymode-breakup", async (req, res) => {
+//   try {
+// const pool = await poolPromise;
+//     //const pool = await sql.connect(config);   // ✅ fixed here
+
+//     const result = await pool.request().query(`
+//       SELECT Paymode, SUM(Amount) AS TotalAmount
+//       FROM vw_POS_PaymodeDetail
+//       GROUP BY Paymode
+//     `);
+    
+
+//     res.json(result.recordset);
+
+//   } catch (err) {
+
+//     console.error("SQL ERROR:", err);
+
+//     res.status(500).json({
+//       message: "Server Error",
+//       error: err.message
+//     });
+
+//   }
+// });
 
 
 /////live sales 

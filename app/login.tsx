@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Alert,
   Image,
@@ -56,7 +57,8 @@ export default function Login() {
     console.log("DATA:", data);
 
     if (response.status === 200 && data.success) {
-      Alert.alert("Success", "Login Successful");
+      await AsyncStorage.setItem("user", JSON.stringify(data.user));
+      // Alert.alert("Success", "Login Successful");
       router.replace("/home");
       return;
     }

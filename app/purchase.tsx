@@ -62,6 +62,8 @@ export default function Purchase() {
 
     const [showFromPicker, setShowFromPicker] = useState(false);
     const [showToPicker, setShowToPicker] = useState(false);
+
+    const [loading, setLoading] = useState(false);
     // 🔹 Select Type
     const handleSelect = (type: string) => {
         setSelected(type);
