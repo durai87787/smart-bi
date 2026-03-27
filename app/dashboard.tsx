@@ -1,18 +1,23 @@
 import axios from "axios";
+import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Dimensions,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
-  View,
-  ActivityIndicator
+  TouchableOpacity,
+  View
 } from "react-native";
 
-import { useRouter } from "expo-router";
-import { BarChart, PieChart } from "react-native-chart-kit";
-import { BASE_URL } from "./config/api";
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Stack, useRouter } from "expo-router";
+import { PieChart } from "react-native-chart-kit";
 import { BarChart as GiftedBarChart } from "react-native-gifted-charts";
+import { BASE_URL } from "./config/api";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -34,13 +39,100 @@ interface ChartItem {
 
 export default function Dashboard() {
 
-  const router = useRouter();
+  const premiumColors = [
+  "#6366f1", // indigo
+  "#0ea5e9", // sky blue
+  "#10b981", // emerald
+  "#f59e0b", // amber
+  "#ef4444", // red
+];
 
+const gradients = [
+  ["#6366f1", "#8b5cf6"],
+  ["#0ea5e9", "#06b6d4"],
+  ["#10b981", "#22c55e"],
+  ["#f59e0b", "#f97316"],
+  ["#ef4444", "#f43f5e"],
+] as const;
+
+  const router = useRouter();
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [buttons, setButtons] = useState<ButtonItem[]>([]);
   const [pie, setPie] = useState<ChartItem[]>([]);
   const [bar, setBar] = useState<ChartItem[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const formatDate = (date: Date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
+  
+  const getToday = () => new Date();
+    
+     const [showFilter, setShowFilter] = useState(false);
+      const [selected, setSelected] = useState("day");
+    
+      const [fromDate, setFromDate] = useState(getToday());
+      const [toDate, setToDate] = useState(getToday());
+    
+      const [showFromPicker, setShowFromPicker] = useState(false);
+      const [showToPicker, setShowToPicker] = useState(false);
+  
+      // 🔹 Select Type
+    const handleSelect = (type: string) => {
+      setSelected(type);
+  
+      if (type === "day") {
+        const today = new Date();
+        setFromDate(today);
+        setToDate(today);
+      }
+  
+      if (type === "week") {
+        const { from, to } = getWeekRange();
+        setFromDate(from);
+        setToDate(to);
+      }
+  
+      if (type === "month") {
+        const { from, to } = getMonthRange();
+        setFromDate(from);
+        setToDate(to);
+      }
+    };
+  
+  
+  
+  const getWeekRange = () => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  
+    const monday = new Date(today.setDate(diff));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+  
+    return { from: monday, to: sunday };
+  };
+  
+  const getMonthRange = () => {
+    const today = new Date();
+    const first = new Date(today.getFullYear(), today.getMonth(), 1);
+    const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  
+    return { from: first, to: last };
+  };
+  
+    // 🔹 Apply
+    const handleApply = () => {
+      console.log("From:", formatDate(fromDate));
+      console.log("To:", formatDate(toDate));
+     loadDashboard();
+      setShowFilter(false);
+    };
+  
 
   useEffect(() => {
     loadDashboard();
@@ -48,23 +140,25 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
 
-    const fromDate = "2025-08-01";
-    const toDate = "2026-12-31";
+    const from_Date = formatDate(fromDate);
+    const to_Date   = formatDate(toDate);
+
+    
 
     setLoading(true);
 
     try {
 
-      const loc = await axios.get(`${BASE_URL}/dashboard/location?from=${fromDate}&to=${toDate}`);
+      const loc = await axios.get(`${BASE_URL}/dashboard/location?from=${from_Date}&to=${to_Date}`);
       setLocations(loc.data);
 
-      const btn = await axios.get(`${BASE_URL}/dashboard/buttons?from=${fromDate}&to=${toDate}`);
+      const btn = await axios.get(`${BASE_URL}/dashboard/buttons?from=${from_Date}&to=${to_Date}`);
       setButtons(btn.data);
 
-      const pieRes = await axios.get(`${BASE_URL}/dashboard/pie?from=${fromDate}&to=${toDate}`);
+      const pieRes = await axios.get(`${BASE_URL}/dashboard/pie?from=${from_Date}&to=${to_Date}`);
       setPie(pieRes.data);
 
-      const barRes = await axios.get(`${BASE_URL}/dashboard/bar?from=${fromDate}&to=${toDate}`);
+      const barRes = await axios.get(`${BASE_URL}/dashboard/bar?from=${from_Date}&to=${to_Date}`);
       setBar(barRes.data);
 
     } catch (err) {
@@ -101,6 +195,170 @@ export default function Dashboard() {
 
   return (
     <View style={styles.container}>
+  <Stack.Screen
+              options={{
+                title: "DashBoard",
+                headerRight: () => (
+                   <TouchableOpacity
+          
+          onPress={() => setShowFilter(!showFilter)}
+        >
+          <Text style={{marginRight:20}}>
+          <Ionicons  name="filter-outline" size={24} color="white" />
+             </Text> 
+          {/* <Text style={styles.filterText}>
+            {showFilter ? "Close" : "Filter"}*/}
+       
+        </TouchableOpacity>
+                )
+              }}
+            />
+        {showFilter && (
+        <View style={styles.filterPanel}>
+
+          {/* 🔘 Options */}
+          <View style={styles.buttonRow}>
+            {["day", "week", "month", "custom"].map((item) => (
+              <TouchableOpacity
+                key={item}
+                style={[
+                  styles.optionBtn,
+                  selected === item && styles.activeBtn,
+                ]}
+                onPress={() => handleSelect(item)}
+              >
+                <Text style={styles.btnText}>{item.toUpperCase()}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+
+          {/* 📅 SAME ROW DATE */}
+        <View style={styles.dateRow}>
+
+  {/* FROM */}
+  <View style={styles.dateBox}>
+    {/* <Text style={styles.label}>From</Text> */}
+
+    {Platform.OS === "web" ? (
+      <input
+        type="date"
+        value={formatDate(fromDate)}
+        onChange={(e) => {
+          const value = e.target.value; // yyyy-mm-dd
+          if (!value) return;
+
+          const [y, m, d] = value.split("-");
+          const newDate = new Date(
+            Number(y),
+            Number(m) - 1,
+            Number(d)
+          );
+
+          setFromDate(newDate);
+        }}
+        style={styles.webInput}
+      />
+    ) : (
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => {
+          if (selected === "custom") {
+            setShowFromPicker(true);
+          }
+        }}
+      >
+        <Text>{formatDate(fromDate)}</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+
+  {/* TO */}
+  <View style={styles.dateBox}>
+    {/* <Text style={styles.label}>To</Text> */}
+
+    {Platform.OS === "web" ? (
+      <input
+        type="date"
+        value={formatDate(toDate)}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (!value) return;
+
+          const [y, m, d] = value.split("-");
+          const newDate = new Date(
+            Number(y),
+            Number(m) - 1,
+            Number(d)
+          );
+
+          setToDate(newDate);
+        }}
+        style={styles.webInput}
+      />
+    ) : (
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => {
+          if (selected === "custom") {
+            setShowToPicker(true);
+          }
+        }}
+      >
+        <Text>{formatDate(toDate)}</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+
+</View>
+
+{/* 📅 MOBILE PICKERS */}
+{Platform.OS !== "web" && showFromPicker && (
+  <DateTimePicker
+    value={fromDate}
+    mode="date"
+    display="default"
+    onChange={(event, date) => {
+      setShowFromPicker(false);
+      if (date) {
+        setFromDate(date);
+
+        // ✅ auto fix: if from > to
+        if (date > toDate) {
+          setToDate(date);
+        }
+      }
+    }}
+  />
+)}
+
+{Platform.OS !== "web" && showToPicker && (
+  <DateTimePicker
+    value={toDate}
+    mode="date"
+    display="default"
+    onChange={(event, date) => {
+      setShowToPicker(false);
+      if (date) {
+        setToDate(date);
+
+        // ✅ auto fix: if to < from
+        if (date < fromDate) {
+          setFromDate(date);
+        }
+      }
+    }}
+  />
+)}
+
+
+          {/* ✅ Apply */}
+          <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+            <Text style={styles.applyText}>Apply</Text>
+          </TouchableOpacity>
+
+        </View>
+      )}
 
       {loading ? (
         <View style={styles.loader}>
@@ -117,19 +375,37 @@ export default function Dashboard() {
           )}
 
           {/* Location Cards */}
-          <View style={styles.row}>
-            {locations.map((item, index) => (
-              <View key={index} style={styles.locationCard}>
-                <Text style={styles.locName}>{item.LocationName}</Text>
-                <Text style={styles.amount}>
-                  ₹{Number(item.TotalSales).toLocaleString()}
-                </Text>
-              </View>
-            ))}
-          </View>
+
+
+        <View style={styles.row}>
+  {locations.map((item, index) => {
+    const colors = gradients[index % gradients.length];
+
+    return (
+      <LinearGradient
+        key={index}
+        colors={colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.locationCard} // ✅ SAME STYLE NAME
+      >
+        {/* ✨ Shine effect */}
+        <View  />
+
+        <Text style={styles.locName}>
+          {item.LocationName}
+        </Text>
+
+        <Text style={styles.amount}>
+          ₹{Number(item.TotalSales).toLocaleString()}
+        </Text>
+      </LinearGradient>
+    );
+  })}
+</View>
 
           {/* KPI Cards */}
-          <View style={styles.grid}>
+          {/* <View style={styles.grid}>
             {buttons.map((item, index) => (
               <View key={index} style={styles.smallCard}>
                 <Text style={styles.cardTitle}>{item.Name}</Text>
@@ -138,7 +414,45 @@ export default function Dashboard() {
                 </Text>
               </View>
             ))}
-          </View>
+          </View> */}
+          
+<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+  {buttons.map((item, index) => {
+    const gradients = [
+      ["#6366f1", "#8b5cf6"],
+      ["#0ea5e9", "#06b6d4"],
+      ["#10b981", "#22c55e"],
+      ["#f59e0b", "#f97316"],
+      ["#ef4444", "#f43f5e"],
+    ];
+
+    const colors = gradients[index % gradients.length];
+  
+    return (
+      <View key={index} style={styles.cardWrapper}>
+        
+        {/* 🔥 Gradient Card */}
+        <LinearGradient
+          colors={colors as [string, string]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.premiumCard}
+        >
+
+          {/* ✨ Glass shine effect */}
+          <View style={styles.shine} />
+
+          <Text style={styles.cardTitle1}>{item.Name}</Text>
+
+          <Text style={styles.amount1}>
+            ₹ {Number(item.Total).toLocaleString()}
+          </Text>
+
+        </LinearGradient>
+      </View>
+    );
+  })}
+</ScrollView>
 
           {/* Pie Chart */}
           <View style={styles.chartCard}>
@@ -168,7 +482,7 @@ export default function Dashboard() {
           {/* Bar Chart */}
          {animatedBarData.length > 0 && (
   <View style={styles.chartCard}>
-    <Text style={styles.chartTitle}>Sales Overview</Text>
+    <Text style={styles.chartTitle}>Sales</Text>
 
    <GiftedBarChart
   data={animatedBarData}
@@ -222,27 +536,30 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    padding: 10
+     padding: 7,
+    // marginTop:-20
+    
   }, 
 
   locationCard: {
     backgroundColor: "#fff",
     padding: 15,
     borderRadius: 12,
-    width: "48%",
+    width: "45%",
     elevation: 3
   },
 
   locName: {
-    fontSize: 14,
-    color: "#666"
+    fontSize: 20,
+    color: "#ffffff"
   },
 
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    padding: 10
+    // padding: 5
+    
   },
 
   smallCard: {
@@ -255,14 +572,15 @@ const styles = StyleSheet.create({
   },
 
   cardTitle: {
-    fontSize: 13,
-    color: "#555"
+    fontSize: 18,
+    color: "#fefdfd"
   },
 
   amount: {
     fontSize: 18,
     fontWeight: "bold",
-    marginTop: 6
+    marginTop: 6,
+    color: "#fefdfd"
   },
 
   chartCard: {
@@ -277,6 +595,149 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10
-  }
+  },
+  //filter ///
+   toolbar: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#007bff",
+  },
+
+  title: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+
+  filterBtn: {
+    backgroundColor: "#fff",
+    padding: 8,
+    borderRadius: 6,
+  },
+
+  filterText: {
+    color: "#007bff",
+    fontWeight: "bold",
+   
+  },
+
+  filterPanel: {
+    backgroundColor: "#f5f5f5",
+    padding: 15,
+  },
+
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
+  },
+
+  optionBtn: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: "#ccc",
+    width: "23%",
+    alignItems: "center",
+  },
+
+  activeBtn: {
+    backgroundColor: "#007bff",
+  },
+
+  btnText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+
+  dateRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+
+  dateBox: {
+    width: "48%",
+  },
+
+  label: {
+    marginBottom: 5,
+    fontSize: 13,
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 10,
+  },
+
+  webInput: {
+    padding: 10,
+    borderRadius: 8,
+    border: "1px solid #ccc",
+  } as any,
+
+  applyBtn: {
+    marginTop: 20,
+    backgroundColor: "#6d6e6e",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+
+  applyText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+
+  content: {
+    flex: 1,
+    padding: 20,
+  },
+  cardWrapper: {
+  marginRight: 16,
+},
+
+premiumCard: {
+  width: 180,
+  height: 100,
+  padding: 13,
+  borderRadius: 15,
+  justifyContent: "space-between",
+
+  // 🔥 Deep Shadow
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 10 },
+  shadowOpacity: 0.25,
+  shadowRadius: 12,
+  marginLeft:10,
+  elevation: 12,
+},
+
+// ✨ Glass shine overlay
+shine: {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  height: 50,
+  backgroundColor: "rgba(255,255,255,0.2)",
+  borderTopLeftRadius: 20,
+  borderTopRightRadius: 20,
+},
+
+cardTitle1: {
+  color: "rgba(255,255,255,0.85)",
+  fontSize: 20,
+},
+
+amount1: {
+  color: "#fff",
+  fontSize: 20,
+  fontWeight: "bold",
+},
 
 });

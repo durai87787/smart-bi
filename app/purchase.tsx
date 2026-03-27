@@ -15,6 +15,7 @@ import { Stack, useRouter } from "expo-router";
 import { BASE_URL } from "./config/api";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
+const [loading, setLoading] = useState(false);
 const formatDate = (date: Date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -102,34 +103,65 @@ export default function Purchase() {
 
     const [data, setData] = useState<PurchaseData | null>(null);
 
-    const loadPurchase = () => {
-   console.log(fromDate,toDate);
+//     const loadPurchase = () => {
+//    console.log(fromDate,toDate);
    
-        fetch(`${BASE_URL}/purchase-summary`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                FromDate: fromDate,
-                ToDate: toDate
-            })
-        })
-            .then(res => res.json())
-            .then(result => {
+//         fetch(`${BASE_URL}/purchase-summary`, {
+//             method: "POST",
+//             headers: {
+//                 "Content-Type": "application/json"
+//             },
+//             body: JSON.stringify({
+//                 FromDate: fromDate,
+//                 ToDate: toDate
+//             })
+//         })
+//             .then(res => res.json())
+//             .then(result => {
 
-                console.log("Purchase API:", result);
+//                 console.log("Purchase API:", result);
 
-                if (result.length > 0) {
-                    setData(result[0]);
-                }
+//                 if (result.length > 0) {
+//                     setData(result[0]);
+//                 }
 
-            })
-            .catch(err => {
-                console.log("API Error:", err);
-            });
+//             })
+//             .catch(err => {
+//                 console.log("API Error:", err);
+//             });
 
-    };
+//     };
+
+const loadPurchase = () => {
+  console.log('fromDate',formatDate(fromDate), formatDate(toDate));
+
+  setLoading(true); // ✅ START LOADING
+
+  fetch(`${BASE_URL}/purchase-summary`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      FromDate: formatDate(fromDate),
+      ToDate: formatDate(toDate)
+    })
+  })
+    .then(res => res.json())
+    .then(result => {
+      console.log("Purchase API:", result);
+
+      if (result.length > 0) {
+        setData(result[0]);
+      }
+    })
+    .catch(err => {
+      console.log("API Error:", err);
+    })
+    .finally(() => {
+      setLoading(false); // ✅ STOP LOADING
+    });
+};
 
     useEffect(() => {
         loadPurchase();
