@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Platform,
@@ -11,6 +11,7 @@ import {
   View
 } from "react-native";
 import { BASE_URL } from "./config/api";
+
 
 // ================================
 // 🔥 TYPE
@@ -64,18 +65,18 @@ export default function DepartmentWiseSales() {
 
   const [openDept, setOpenDept] = useState<string | null>(null);
   const [openCat, setOpenCat] = useState<string | null>(null);
- 
+
   const [loadingDept, setLoadingDept] = useState(false);
   const [loadingCat, setLoadingCat] = useState(false);
   const [loadingBrand, setLoadingBrand] = useState(false);
-  
 
+  const router = useRouter();
   // const fromDate = "2025-08-12";
   // const toDate = "2026-03-04";
 
-////filter
+  ////filter
 
- const [showFilter, setShowFilter] = useState(false);
+  const [showFilter, setShowFilter] = useState(false);
   const [selected, setSelected] = useState("day");
 
   const [fromDate, setFromDate] = useState(getToday());
@@ -83,7 +84,7 @@ export default function DepartmentWiseSales() {
 
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
-// 🔹 Select Type
+  // 🔹 Select Type
   const handleSelect = (type: string) => {
     setSelected(type);
 
@@ -121,176 +122,193 @@ export default function DepartmentWiseSales() {
   // ================================
   // 🔹 LOAD DEPARTMENTS
   // ================================
- const loadDepartments = async () => {
-  console.log('d', formatDate(fromDate));
-  // alert(formatDate(fromDate))
-  setLoadingDept(true);   // ✅ ADD
+  const loadDepartments = async () => {
+    console.log('d', formatDate(fromDate));
+    // alert(formatDate(fromDate))
+    setLoadingDept(true);   // ✅ ADD
 
-  try {
-    const res = await fetch(`${BASE_URL}/department-sales`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        FromDate: formatDate(fromDate),
-        ToDate: formatDate(toDate),
-        loctCode: ""
-      })
-    });
+    try {
+      const res = await fetch(`${BASE_URL}/department-sales`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          FromDate: formatDate(fromDate),
+          ToDate: formatDate(toDate),
+          loctCode: ""
+        })
+      });
 
-    const text = await res.text();
-    const data = JSON.parse(text);
+      const text = await res.text();
+      const data = JSON.parse(text);
 
-    if (Array.isArray(data)) {
-      setDepartments(data);
-    } else {
-      console.log("Dept Error:", data);
+      if (Array.isArray(data)) {
+        setDepartments(data);
+      } else {
+        console.log("Dept Error:", data);
+        setDepartments([]);
+      }
+
+    } catch (err) {
+      console.log("Dept Fetch Error:", err);
       setDepartments([]);
+    } finally {
+      setLoadingDept(false);   // ✅ ADD
     }
-
-  } catch (err) {
-    console.log("Dept Fetch Error:", err);
-    setDepartments([]);
-  } finally {
-    setLoadingDept(false);   // ✅ ADD
-  }
-};
+  };
 
   // ================================
   // 🔹 LOAD CATEGORY
   // ================================
   const loadCategories = async (deptCode: string) => {
-    console.log('c',formatDate(fromDate),);
-// alert(deptCode);
+    console.log('c', formatDate(fromDate),);
+    // alert(deptCode);
 
-  if (openDept === deptCode) {
-    setOpenDept(null);
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/category-sales`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        FromDate: formatDate(fromDate),
-        ToDate  : formatDate(toDate),
-        loctCode: "",
-        DeptCode: deptCode
-      })
-    });
-
-    const text = await res.text();
-    console.log("CATEGORY RAW:", text);
-
-    const data = JSON.parse(text);
-
-    // ✅ FIX HERE
-    if (Array.isArray(data)) {
-      setCategories(prev => ({
-        ...prev,
-        [deptCode]: data
-      }));
-    } else {
-      console.log("Category Error:", data);
-      setCategories(prev => ({
-        ...prev,
-        [deptCode]: []
-      }));
+    if (openDept === deptCode) {
+      setOpenDept(null);
+      return;
     }
 
-    setOpenDept(deptCode);
-    setOpenCat(null);
+    try {
+      const res = await fetch(`${BASE_URL}/category-sales`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          FromDate: formatDate(fromDate),
+          ToDate: formatDate(toDate),
+          loctCode: "",
+          DeptCode: deptCode
+        })
+      });
 
-  } catch (err) {
-    console.log("Category Fetch Error:", err);
-  }
-};
+      const text = await res.text();
+      console.log("CATEGORY RAW:", text);
+
+      const data = JSON.parse(text);
+
+      // ✅ FIX HERE
+      if (Array.isArray(data)) {
+        setCategories(prev => ({
+          ...prev,
+          [deptCode]: data
+        }));
+      } else {
+        console.log("Category Error:", data);
+        setCategories(prev => ({
+          ...prev,
+          [deptCode]: []
+        }));
+      }
+
+      setOpenDept(deptCode);
+      setOpenCat(null);
+
+    } catch (err) {
+      console.log("Category Fetch Error:", err);
+    }
+  };
   // ================================
   // 🔹 LOAD BRAND
   // ================================
   const loadBrands = async (deptCode: string, catCode: string) => {
-console.log('b',formatDate(fromDate),);
-  if (openCat === catCode) {
-    setOpenCat(null);
-    return;
-  }
-
-  try {
-    const res = await fetch(`${BASE_URL}/brand-sales`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        FromDate: formatDate(fromDate),
-        ToDate: formatDate(toDate),
-        loctCode: "",
-        DeptCode: deptCode,
-        CatCode: catCode
-      })
-    });
-
-    const text = await res.text();
-    console.log("BRAND RAW:", text);
-
-    const data = JSON.parse(text);
-
-    // ✅ FIX
-    if (Array.isArray(data)) {
-      setBrands(prev => ({
-        ...prev,
-        [catCode]: data
-      }));
-    } else {
-      console.log("Brand Error:", data);
-      setBrands(prev => ({
-        ...prev,
-        [catCode]: []
-      }));
+    console.log('b', formatDate(fromDate),);
+    if (openCat === catCode) {
+      setOpenCat(null);
+      return;
     }
 
-    setOpenCat(catCode);
+    try {
+      const res = await fetch(`${BASE_URL}/brand-sales`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          FromDate: formatDate(fromDate),
+          ToDate: formatDate(toDate),
+          loctCode: "",
+          DeptCode: deptCode,
+          CatCode: catCode
+        })
+      });
 
-  } catch (err) {
-    console.log("Brand Fetch Error:", err);
-  }
-};
+      const text = await res.text();
+      console.log("BRAND RAW:", text);
+
+      const data = JSON.parse(text);
+
+      // ✅ FIX
+      if (Array.isArray(data)) {
+        setBrands(prev => ({
+          ...prev,
+          [catCode]: data
+        }));
+      } else {
+        console.log("Brand Error:", data);
+        setBrands(prev => ({
+          ...prev,
+          [catCode]: []
+        }));
+      }
+
+      setOpenCat(catCode);
+
+    } catch (err) {
+      console.log("Brand Fetch Error:", err);
+    }
+  };
 
   useEffect(() => {
     loadDepartments();
   }, []);
 
+
+
+  const goToInventory = (br: any, cat: any, dept: any) => {
+    console.log("CLICK DATA:", br, cat, dept); // 🔥 debug
+
+    router.push({
+      pathname: "/inventory-list", // ⚠️ make sure file name matches
+      params: {
+        loctCode: dept?.loctCode || null,   // ✅ added
+        DeptCode: dept?.DepartmentCode,     // ✅ FIXED
+        CatCode: cat?.CategoryCode,         // ✅ FIXED
+        BCode: br?.BrandCode,               // ✅ correct
+        FromDate: formatDate(fromDate),
+        ToDate: formatDate(toDate),
+      },
+    });
+  };
   return (
     <ScrollView style={styles.container}>
-       <Stack.Screen
-              options={{
-                title: "Department Wise Sales",
-                headerRight: () => (
-                   <TouchableOpacity
-          
-          onPress={() => setShowFilter(!showFilter)}
-        >
-          <Text style={{marginRight:20}}>
-          <Ionicons  name="filter-outline" size={24} color="white" />
-             </Text> 
-          {/* <Text style={styles.filterText}>
+      <Stack.Screen
+        options={{
+          title: "Department Wise Sales",
+          headerRight: () => (
+            <TouchableOpacity
+
+              onPress={() => setShowFilter(!showFilter)}
+            >
+              <Text style={{ marginRight: 20 }}>
+                <Ionicons name="filter-outline" size={24} color="white" />
+              </Text>
+              {/* <Text style={styles.filterText}>
             {showFilter ? "Close" : "Filter"}*/}
-       
-        </TouchableOpacity>
-                  // <TouchableOpacity
-                  //   // onPress={confirmLogout}
-                  //   style={{ marginRight: 5, padding: 10 }}
-                  // >
-                  //   <Ionicons name="filter-outline" size={24} color="white" />
-                  // </TouchableOpacity>
-                )
-              }}
-            />
-            
+
+            </TouchableOpacity>
+            // <TouchableOpacity
+            //   // onPress={confirmLogout}
+            //   style={{ marginRight: 5, padding: 10 }}
+            // >
+            //   <Ionicons name="filter-outline" size={24} color="white" />
+            // </TouchableOpacity>
+          )
+        }}
+      />
+
 
 
       {/* 🔽 Filter Panel */}
@@ -315,122 +333,122 @@ console.log('b',formatDate(fromDate),);
 
 
           {/* 📅 SAME ROW DATE */}
-        <View style={styles.dateRow}>
+          <View style={styles.dateRow}>
 
-  {/* FROM */}
-  <View style={styles.dateBox}>
-    {/* <Text style={styles.label}>From</Text> */}
+            {/* FROM */}
+            <View style={styles.dateBox}>
+              {/* <Text style={styles.label}>From</Text> */}
 
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(fromDate)}
-        onChange={(e) => {
-          const value = e.target.value; // yyyy-mm-dd
-          if (!value) return;
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  value={formatDate(fromDate)}
+                  onChange={(e) => {
+                    const value = e.target.value; // yyyy-mm-dd
+                    if (!value) return;
 
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
+                    const [y, m, d] = value.split("-");
+                    const newDate = new Date(
+                      Number(y),
+                      Number(m) - 1,
+                      Number(d)
+                    );
 
-          setFromDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowFromPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(fromDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
+                    setFromDate(newDate);
+                  }}
+                  style={styles.webInput}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => {
+                    if (selected === "custom") {
+                      setShowFromPicker(true);
+                    }
+                  }}
+                >
+                  <Text>{formatDate(fromDate)}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-  {/* TO */}
-  <View style={styles.dateBox}>
-    {/* <Text style={styles.label}>To</Text> */}
+            {/* TO */}
+            <View style={styles.dateBox}>
+              {/* <Text style={styles.label}>To</Text> */}
 
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(toDate)}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (!value) return;
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  value={formatDate(toDate)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!value) return;
 
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
+                    const [y, m, d] = value.split("-");
+                    const newDate = new Date(
+                      Number(y),
+                      Number(m) - 1,
+                      Number(d)
+                    );
 
-          setToDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowToPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(toDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
+                    setToDate(newDate);
+                  }}
+                  style={styles.webInput}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => {
+                    if (selected === "custom") {
+                      setShowToPicker(true);
+                    }
+                  }}
+                >
+                  <Text>{formatDate(toDate)}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-</View>
+          </View>
 
-{/* 📅 MOBILE PICKERS */}
-{Platform.OS !== "web" && showFromPicker && (
-  <DateTimePicker
-    value={fromDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowFromPicker(false);
-      if (date) {
-        setFromDate(date);
+          {/* 📅 MOBILE PICKERS */}
+          {Platform.OS !== "web" && showFromPicker && (
+            <DateTimePicker
+              value={fromDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowFromPicker(false);
+                if (date) {
+                  setFromDate(date);
 
-        // ✅ auto fix: if from > to
-        if (date > toDate) {
-          setToDate(date);
-        }
-      }
-    }}
-  />
-)}
+                  // ✅ auto fix: if from > to
+                  if (date > toDate) {
+                    setToDate(date);
+                  }
+                }
+              }}
+            />
+          )}
 
-{Platform.OS !== "web" && showToPicker && (
-  <DateTimePicker
-    value={toDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowToPicker(false);
-      if (date) {
-        setToDate(date);
+          {Platform.OS !== "web" && showToPicker && (
+            <DateTimePicker
+              value={toDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowToPicker(false);
+                if (date) {
+                  setToDate(date);
 
-        // ✅ auto fix: if to < from
-        if (date < fromDate) {
-          setFromDate(date);
-        }
-      }
-    }}
-  />
-)}
+                  // ✅ auto fix: if to < from
+                  if (date < fromDate) {
+                    setFromDate(date);
+                  }
+                }
+              }}
+            />
+          )}
 
 
           {/* ✅ Apply */}
@@ -440,110 +458,115 @@ console.log('b',formatDate(fromDate),);
 
         </View>
       )}
-            
-        <View style={styles.dotContainer}>
+
+      <View style={styles.dotContainer}>
         <View style={[styles.dot, { backgroundColor: "#9ee6fc" }]} />
         <Text style={styles.text}>Department</Text>
         <View style={[styles.dot, { backgroundColor: "#c2fbcf" }]} />
         <Text style={styles.text}>Categories</Text>
         <View style={[styles.dot, { backgroundColor: "#fbf8da" }]} />
-         <Text style={styles.text}>Brands</Text>
-        </View>
-
-   {/* 🔥 DEPARTMENT LOADING */}
-{loadingDept && (
-  <Text style={{ textAlign: "center", marginTop: 250 ,fontSize:25}}>
-    Loading...
-  </Text>
-)}
-
-{/* 🔥 NO DEPARTMENT DATA */}
-{!loadingDept && Array.isArray(departments) && departments.length === 0 && (
-  <Text style={{ textAlign: "center", marginTop: 250 ,fontSize:20 }}>
-    No Data Found
-  </Text>
-)}
-{Array.isArray(departments) && departments.map((dept, i) => (
-  <View key={i} style={styles.deptCard}>
-
-    {/* 🔵 DEPARTMENT */}
-    <TouchableOpacity
-      onPress={() => {
-        if (!dept.DepartmentCode) {
-          console.log("Invalid DeptCode:", dept);
-          return;
-        }
-        loadCategories(dept.DepartmentCode);
-      }}
-    >
-      <View style={styles.row}>
-        <Text style={styles.deptText}>{dept.DepartmentName}</Text>
-
-        <View style={{ alignItems: "flex-end" }}>
-          <Text style={styles.amount}>$ {dept.Total}</Text>
-        </View>
+        <Text style={styles.text}>Brands</Text>
       </View>
-    </TouchableOpacity>
 
-    {/* 🟢 CATEGORY */}
-    {openDept === dept.DepartmentCode && (
-      <>
-        {/* 🔥 NO CATEGORY DATA */}
-        {!loadingCat &&
-          (!categories[String(dept.DepartmentCode)] ||
-            categories[String(dept.DepartmentCode)].length === 0) && (
-            <Text style={{ padding: 10 }}>No Data Found</Text>
-          )}
+      {/* 🔥 DEPARTMENT LOADING */}
+      {loadingDept && (
+        <Text style={{ textAlign: "center", marginTop: 250, fontSize: 25 }}>
+          Loading...
+        </Text>
+      )}
 
-        {categories[String(dept.DepartmentCode)]?.map((cat, j) => (
-          <View key={j} style={styles.catCard}>
+      {/* 🔥 NO DEPARTMENT DATA */}
+      {!loadingDept && Array.isArray(departments) && departments.length === 0 && (
+        <Text style={{ textAlign: "center", marginTop: 250, fontSize: 20 }}>
+          No Data Found
+        </Text>
+      )}
+      {Array.isArray(departments) && departments.map((dept, i) => (
+        <View key={i} style={styles.deptCard}>
 
-            <TouchableOpacity
-              onPress={() => {
-                if (!cat.CategoryCode) return;
-                loadBrands(dept.DepartmentCode!, cat.CategoryCode);
-              }}
-            >
-              <View style={styles.row}>
-                <Text style={styles.catText}>{cat.CategoryName}</Text>
+          {/* 🔵 DEPARTMENT */}
+          <TouchableOpacity
+            onPress={() => {
+              if (!dept.DepartmentCode) {
+                console.log("Invalid DeptCode:", dept);
+                return;
+              }
+              loadCategories(dept.DepartmentCode);
+            }}
+          >
+            <View style={styles.row}>
+              <Text style={styles.deptText}>{dept.DepartmentName}</Text>
 
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text style={styles.amount}>$ {cat.Total}</Text>
-                </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={styles.amount}>$ {dept.Total}</Text>
               </View>
-            </TouchableOpacity>
+            </View>
+          </TouchableOpacity>
 
-            {/* 🟡 BRAND */}
-            {openCat === cat.CategoryCode && (
-              <>
-                {/* 🔥 NO BRAND DATA */}
-                {!loadingBrand &&
-                  (!brands[String(cat.CategoryCode)] ||
-                    brands[String(cat.CategoryCode)].length === 0) && (
-                    <Text style={{ padding: 10 }}>No Data Found</Text>
-                  )}
+          {/* 🟢 CATEGORY */}
+          {openDept === dept.DepartmentCode && (
+            <>
+              {/* 🔥 NO CATEGORY DATA */}
+              {!loadingCat &&
+                (!categories[String(dept.DepartmentCode)] ||
+                  categories[String(dept.DepartmentCode)].length === 0) && (
+                  <Text style={{ padding: 10 }}>No Data Found</Text>
+                )}
 
-                {brands[String(cat.CategoryCode)]?.map((br, k) => (
-                  <View key={k} style={styles.brandCard}>
+              {categories[String(dept.DepartmentCode)]?.map((cat, j) => (
+                <View key={j} style={styles.catCard}>
+
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (!cat.CategoryCode) return;
+                      loadBrands(dept.DepartmentCode!, cat.CategoryCode);
+                    }}
+                  >
                     <View style={styles.row}>
-                      <Text style={styles.brandText}>{br.BrandName}</Text>
+                      <Text style={styles.catText}>{cat.CategoryName}</Text>
 
                       <View style={{ alignItems: "flex-end" }}>
-                        <Text style={styles.amount}>$ {br.Total}</Text>
+                        <Text style={styles.amount}>$ {cat.Total}</Text>
                       </View>
                     </View>
-                  </View>
-                ))}
-              </>
-            )}
+                  </TouchableOpacity>
 
-          </View>
-        ))}
-      </>
-    )}
+                  {/* 🟡 BRAND */}
+                  {openCat === cat.CategoryCode && (
+                    <>
+                      {/* 🔥 NO BRAND DATA */}
+                      {!loadingBrand &&
+                        (!brands[String(cat.CategoryCode)] ||
+                          brands[String(cat.CategoryCode)].length === 0) && (
+                          <Text style={{ padding: 10 }}>No Data Found</Text>
+                        )}
 
-  </View>
-))}
+                      {brands[String(cat.CategoryCode)]?.map((br, k) => (
+                        <TouchableOpacity
+                          key={k}
+                          style={styles.brandCard}
+                          onPress={() => goToInventory(br, cat, dept)}
+                          activeOpacity={0.7}
+                        >
+                          <View style={styles.row}>
+                            <Text style={styles.brandText}>{br.BrandName}</Text>
+
+                            <View style={{ alignItems: "flex-end" }}>
+                              <Text style={styles.amount}>$ {br.Total}</Text>
+                            </View>
+                          </View>
+                        </TouchableOpacity>
+                      ))}
+                    </>
+                  )}
+
+                </View>
+              ))}
+            </>
+          )}
+
+        </View>
+      ))}
     </ScrollView>
   );
 }
@@ -623,7 +646,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginHorizontal: 8
   },
-    text: {
+  text: {
     fontSize: 16,
     fontWeight: "500"
   },
@@ -655,7 +678,7 @@ const styles = StyleSheet.create({
   filterText: {
     color: "#007bff",
     fontWeight: "bold",
-   
+
   },
 
   filterPanel: {

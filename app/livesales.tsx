@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-  ActivityIndicator
+  View
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-import { BASE_URL } from "./config/api";
 import { Stack } from "expo-router";
+import { BASE_URL } from "./config/api";
 
 type Sales = {
   Label: string;
@@ -29,7 +29,7 @@ export default function LiveSales() {
   const [error, setError] = useState("");
 
   const loadSales = () => {
-console.log('type',type);
+    console.log('type', type);
 
     setLoading(true);
     setError("");
@@ -63,48 +63,47 @@ console.log('type',type);
     loadSales();
   }, [type]);
 
-  const renderItem = ({ item, index }: any) => (
+  const renderItem = ({ item, index }: any) => {
+    const locations = Object.keys(item).filter(
+      (key) => key !== "Label" && item[key] !== null
+    );
 
-    <View style={styles.card}>
+    return (
+      <View style={styles.card}>
+        <TouchableOpacity
+          style={styles.cardHeader}
+          onPress={() => setExpanded(expanded === index ? null : index)}
+        >
+          <Text style={styles.date}>{item.Label}</Text>
 
-      <TouchableOpacity
-        style={styles.cardHeader}
-        onPress={() => setExpanded(expanded === index ? null : index)}>
+          <Ionicons
+            name={expanded === index ? "chevron-up" : "chevron-down"}
+            size={20}
+          />
+        </TouchableOpacity>
 
-        <Text style={styles.date}>
-          {item.Label}
-        </Text>
+        {expanded === index && (
+          <View>
+            {/* Header */}
+            <View style={styles.tableHeader}>
+              <Text style={styles.col1}>S.No</Text>
+              <Text style={styles.col2}>Location</Text>
+              <Text style={styles.col3}>Amount</Text>
+            </View>
 
-        <Ionicons
-          name={expanded === index ? "chevron-up" : "chevron-down"}
-          size={20}
-        />
-
-      </TouchableOpacity>
-
-      {expanded === index && (
-
-        <View>
-
-          <View style={styles.tableHeader}>
-            <Text style={styles.col1}>S.No</Text>
-            <Text style={styles.col2}>Location</Text>
-            <Text style={styles.col3}>Amount</Text>
+            {/* Dynamic Rows */}
+            {locations.map((loc, i) => (
+              <View key={i} style={styles.tableRow}>
+                <Text style={styles.col1}>{i + 1}</Text>
+                <Text style={styles.col2}>{loc}</Text>
+                <Text style={styles.col3}>{item[loc]}</Text>
+              </View>
+            ))}
           </View>
-
-          <View style={styles.tableRow}>
-            <Text style={styles.col1}>1</Text>
-            <Text style={styles.col2}>2G</Text>
-            <Text style={styles.col3}>{item.HQ}</Text>
-          </View>
-
-        </View>
-
-      )}
-
-    </View>
-
-  );
+        )}
+      </View>
+    );
+  };
 
   return (
 
@@ -152,7 +151,7 @@ console.log('type',type);
         </View>
       ) : data.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="bar-chart-outline" size={60} color="#ccc" />
+          <Ionicons name="alert-circle-outline" size={40} color="#999" />
           <Text style={styles.noDataText}>No Data Found</Text>
         </View>
       ) : (

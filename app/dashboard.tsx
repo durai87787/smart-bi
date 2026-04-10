@@ -19,11 +19,13 @@ import { PieChart } from "react-native-chart-kit";
 import { BarChart as GiftedBarChart } from "react-native-gifted-charts";
 import { BASE_URL } from "./config/api";
 
+
+
 const screenWidth = Dimensions.get("window").width;
 
 interface LocationItem {
-  LocationCode: string;
-  LocationName: string;
+  LocationCode: any;
+  LocationName: any;
   TotalSales: number;
 }
 
@@ -40,20 +42,20 @@ interface ChartItem {
 export default function Dashboard() {
 
   const premiumColors = [
-  "#6366f1", // indigo
-  "#0ea5e9", // sky blue
-  "#10b981", // emerald
-  "#f59e0b", // amber
-  "#ef4444", // red
-];
+    "#6366f1", // indigo
+    "#0ea5e9", // sky blue
+    "#10b981", // emerald
+    "#f59e0b", // amber
+    "#ef4444", // red
+  ];
 
-const gradients = [
-  ["#6366f1", "#8b5cf6"],
-  ["#0ea5e9", "#06b6d4"],
-  ["#10b981", "#22c55e"],
-  ["#f59e0b", "#f97316"],
-  ["#ef4444", "#f43f5e"],
-] as const;
+  const gradients = [
+    ["#4346f5ff", "#bea4fdff"],
+    ["#0d8ac4ff", "#9debf9ff"],
+    ["#0c8e62ff", "#9ff9c0ff"],
+    ["#cf8609ff", "#facba7ff"],
+    ["#ed2929ff", "#ffb2beff"],
+  ] as const;
 
   const router = useRouter();
   const [locations, setLocations] = useState<LocationItem[]>([]);
@@ -68,97 +70,139 @@ const gradients = [
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   };
-  
+
   const getToday = () => new Date();
-    
-     const [showFilter, setShowFilter] = useState(false);
-      const [selected, setSelected] = useState("day");
-    
-      const [fromDate, setFromDate] = useState(getToday());
-      const [toDate, setToDate] = useState(getToday());
-    
-      const [showFromPicker, setShowFromPicker] = useState(false);
-      const [showToPicker, setShowToPicker] = useState(false);
-  
-      // 🔹 Select Type
-    const handleSelect = (type: string) => {
-      setSelected(type);
-  
-      if (type === "day") {
-        const today = new Date();
-        setFromDate(today);
-        setToDate(today);
-      }
-  
-      if (type === "week") {
-        const { from, to } = getWeekRange();
-        setFromDate(from);
-        setToDate(to);
-      }
-  
-      if (type === "month") {
-        const { from, to } = getMonthRange();
-        setFromDate(from);
-        setToDate(to);
-      }
-    };
-  
-  
-  
+
+  const [showFilter, setShowFilter] = useState(false);
+  const [selected, setSelected] = useState("day");
+
+  const [fromDate, setFromDate] = useState(getToday());
+  const [toDate, setToDate] = useState(getToday());
+
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showToPicker, setShowToPicker] = useState(false);
+
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [selectedLocationName, setSelectedLocationName] = useState<string>("ALL");
+  const [labelName, setLabelName] = useState("ALL");
+
+  // 🔹 Select Type
+  const handleSelect = (type: string) => {
+    setSelected(type);
+
+    if (type === "day") {
+      const today = new Date();
+      setFromDate(today);
+      setToDate(today);
+    }
+
+    if (type === "week") {
+      const { from, to } = getWeekRange();
+      setFromDate(from);
+      setToDate(to);
+    }
+
+    if (type === "month") {
+      const { from, to } = getMonthRange();
+      setFromDate(from);
+      setToDate(to);
+    }
+  };
+
+
+
   const getWeekRange = () => {
     const today = new Date();
     const day = today.getDay();
     const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  
+
     const monday = new Date(today.setDate(diff));
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-  
+
     return { from: monday, to: sunday };
   };
-  
+
   const getMonthRange = () => {
     const today = new Date();
     const first = new Date(today.getFullYear(), today.getMonth(), 1);
     const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  
+
     return { from: first, to: last };
   };
-  
-    // 🔹 Apply
-    const handleApply = () => {
-      console.log("From:", formatDate(fromDate));
-      console.log("To:", formatDate(toDate));
-     loadDashboard();
-      setShowFilter(false);
-    };
-  
+
+  // 🔹 Apply
+  const handleApply = () => {
+    console.log("From:", formatDate(fromDate));
+    console.log("To:", formatDate(toDate));
+    loadDashboard();
+    setShowFilter(false);
+  };
+
 
   useEffect(() => {
     loadDashboard();
   }, []);
 
-  const loadDashboard = async () => {
+  const totalSales = Array.isArray(locations)
+    ? locations.reduce(
+      (sum, item) => sum + Number(item?.TotalSales ?? 0),
+      0
+    )
+    : 0;
 
+  const finalLocations = [
+    { LocationName: "ALL", TotalSales: totalSales }, // 🔥 first card
+    ...(Array.isArray(locations) ? locations : []),
+  ];
+
+
+  const getLocationId = (item: any) => {
+    console.log(item.LocationCode);
+    setLabelName(item.LocationName);
+    loadDashboard(item.LocationCode);
+    return item.LocationCode ?? 0;
+  };
+
+  const loadDashboard = async (locationCode?: string) => {
     const from_Date = formatDate(fromDate);
-    const to_Date   = formatDate(toDate);
-
-    
+    const to_Date = formatDate(toDate);
 
     setLoading(true);
 
     try {
+      const isEmpty = !locationCode;
 
-      const loc = await axios.get(`${BASE_URL}/dashboard/location?from=${from_Date}&to=${to_Date}`);
+      console.log("Using Location:", locationCode);
+
+      // ✅ LOCATION (same)
+      const loc = await axios.get(
+        `${BASE_URL}/dashboard/location?from=${from_Date}&to=${to_Date}`
+      );
       setLocations(loc.data);
 
-      const btn = await axios.get(`${BASE_URL}/dashboard/buttons?from=${from_Date}&to=${to_Date}`);
+      // ✅ BUTTONS
+      const btn = await axios.get(
+        isEmpty
+          ? `${BASE_URL}/dashboard/buttons?from=${from_Date}&to=${to_Date}`
+          : `${BASE_URL}/dashboard/buttons-location?from=${from_Date}&to=${to_Date}&location=${locationCode}`
+      );
       setButtons(btn.data);
 
-      const pieRes = await axios.get(`${BASE_URL}/dashboard/pie?from=${from_Date}&to=${to_Date}`);
+      // ✅ PIE
+      const pieRes = await axios.get(
+        isEmpty
+          ? `${BASE_URL}/dashboard/pie?from=${from_Date}&to=${to_Date}`
+          : `${BASE_URL}/dashboard/pie-location?from=${from_Date}&to=${to_Date}&location=${locationCode}`
+      );
       setPie(pieRes.data);
 
-      const barRes = await axios.get(`${BASE_URL}/dashboard/bar?from=${from_Date}&to=${to_Date}`);
+      // ✅ BAR
+      const barRes = await axios.get(
+        isEmpty
+          ? `${BASE_URL}/dashboard/bar?from=${from_Date}&to=${to_Date}`
+          : `${BASE_URL}/dashboard/bar-location?from=${from_Date}&to=${to_Date}&location=${locationCode}`
+      );
       setBar(barRes.data);
 
     } catch (err) {
@@ -188,32 +232,35 @@ const gradients = [
   };
 
   const animatedBarData = bar.map((item) => ({
-  value: Number(item.Total),
-  label: item.Name,
-  frontColor: "#6366f1",   // bar color
-}));
+    value: Number(item.Total),
+    label: item.Name,
+    frontColor: "#6366f1",   // bar color
+  }));
+
+
+
 
   return (
     <View style={styles.container}>
-  <Stack.Screen
-              options={{
-                title: "DashBoard",
-                headerRight: () => (
-                   <TouchableOpacity
-          
-          onPress={() => setShowFilter(!showFilter)}
-        >
-          <Text style={{marginRight:20}}>
-          <Ionicons  name="filter-outline" size={24} color="white" />
-             </Text> 
-          {/* <Text style={styles.filterText}>
+      <Stack.Screen
+        options={{
+          title: "DashBoard",
+          headerRight: () => (
+            <TouchableOpacity
+
+              onPress={() => setShowFilter(!showFilter)}
+            >
+              <Text style={{ marginRight: 20 }}>
+                <Ionicons name="filter-outline" size={24} color="white" />
+              </Text>
+              {/* <Text style={styles.filterText}>
             {showFilter ? "Close" : "Filter"}*/}
-       
-        </TouchableOpacity>
-                )
-              }}
-            />
-        {showFilter && (
+
+            </TouchableOpacity>
+          )
+        }}
+      />
+      {showFilter && (
         <View style={styles.filterPanel}>
 
           {/* 🔘 Options */}
@@ -234,122 +281,122 @@ const gradients = [
 
 
           {/* 📅 SAME ROW DATE */}
-        <View style={styles.dateRow}>
+          <View style={styles.dateRow}>
 
-  {/* FROM */}
-  <View style={styles.dateBox}>
-    {/* <Text style={styles.label}>From</Text> */}
+            {/* FROM */}
+            <View style={styles.dateBox}>
+              {/* <Text style={styles.label}>From</Text> */}
 
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(fromDate)}
-        onChange={(e) => {
-          const value = e.target.value; // yyyy-mm-dd
-          if (!value) return;
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  value={formatDate(fromDate)}
+                  onChange={(e) => {
+                    const value = e.target.value; // yyyy-mm-dd
+                    if (!value) return;
 
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
+                    const [y, m, d] = value.split("-");
+                    const newDate = new Date(
+                      Number(y),
+                      Number(m) - 1,
+                      Number(d)
+                    );
 
-          setFromDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowFromPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(fromDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
+                    setFromDate(newDate);
+                  }}
+                  style={styles.webInput}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => {
+                    if (selected === "custom") {
+                      setShowFromPicker(true);
+                    }
+                  }}
+                >
+                  <Text>{formatDate(fromDate)}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-  {/* TO */}
-  <View style={styles.dateBox}>
-    {/* <Text style={styles.label}>To</Text> */}
+            {/* TO */}
+            <View style={styles.dateBox}>
+              {/* <Text style={styles.label}>To</Text> */}
 
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(toDate)}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (!value) return;
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  value={formatDate(toDate)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!value) return;
 
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
+                    const [y, m, d] = value.split("-");
+                    const newDate = new Date(
+                      Number(y),
+                      Number(m) - 1,
+                      Number(d)
+                    );
 
-          setToDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowToPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(toDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
+                    setToDate(newDate);
+                  }}
+                  style={styles.webInput}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => {
+                    if (selected === "custom") {
+                      setShowToPicker(true);
+                    }
+                  }}
+                >
+                  <Text>{formatDate(toDate)}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-</View>
+          </View>
 
-{/* 📅 MOBILE PICKERS */}
-{Platform.OS !== "web" && showFromPicker && (
-  <DateTimePicker
-    value={fromDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowFromPicker(false);
-      if (date) {
-        setFromDate(date);
+          {/* 📅 MOBILE PICKERS */}
+          {Platform.OS !== "web" && showFromPicker && (
+            <DateTimePicker
+              value={fromDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowFromPicker(false);
+                if (date) {
+                  setFromDate(date);
 
-        // ✅ auto fix: if from > to
-        if (date > toDate) {
-          setToDate(date);
-        }
-      }
-    }}
-  />
-)}
+                  // ✅ auto fix: if from > to
+                  if (date > toDate) {
+                    setToDate(date);
+                  }
+                }
+              }}
+            />
+          )}
 
-{Platform.OS !== "web" && showToPicker && (
-  <DateTimePicker
-    value={toDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowToPicker(false);
-      if (date) {
-        setToDate(date);
+          {Platform.OS !== "web" && showToPicker && (
+            <DateTimePicker
+              value={toDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowToPicker(false);
+                if (date) {
+                  setToDate(date);
 
-        // ✅ auto fix: if to < from
-        if (date < fromDate) {
-          setFromDate(date);
-        }
-      }
-    }}
-  />
-)}
+                  // ✅ auto fix: if to < from
+                  if (date < fromDate) {
+                    setFromDate(date);
+                  }
+                }
+              }}
+            />
+          )}
 
 
           {/* ✅ Apply */}
@@ -375,35 +422,57 @@ const gradients = [
           )}
 
           {/* Location Cards */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContainer}
+          >
+            {/* {locations.map((item, index) => {
+              const colors = gradients[index % gradients.length]; */}
 
+            {finalLocations.map((item, index) => {
 
-        <View style={styles.row}>
-  {locations.map((item, index) => {
-    const colors = gradients[index % gradients.length];
+              const colors: readonly [string, string] =
+                index === 0
+                  ? ["#ff7e5f", "#feb47b"]
+                  : gradients[index % gradients.length];
 
-    return (
-      <LinearGradient
-        key={index}
-        colors={colors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.locationCard} // ✅ SAME STYLE NAME
-      >
-        {/* ✨ Shine effect */}
-        <View  />
+              return (
 
-        <Text style={styles.locName}>
-          {item.LocationName}
-        </Text>
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => {
+                    const id = getLocationId(item);
+                    console.log("Selected Location ID:", id);
+                  }}
+                >
+                  <LinearGradient
+                    key={index}
+                    colors={colors as readonly [string, string]} // ✅ fix TS error
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.locationCard1}>
+                    <Text style={styles.locName1}>
+                      {item?.LocationName ?? "N/A"}
+                    </Text>
 
-        <Text style={styles.amount}>
-          ₹{Number(item.TotalSales).toLocaleString()}
-        </Text>
-      </LinearGradient>
-    );
-  })}
-</View>
+                    <Text style={styles.amount1}>
+                      ₹ {Number(item?.TotalSales ?? 0).toLocaleString("en-IN")}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
 
+              );
+            }
+
+            )}
+
+          </ScrollView>
+          <View style={{ alignItems: "center" }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#ab109eff" }}>
+              {labelName}
+            </Text>
+          </View>
           {/* KPI Cards */}
           {/* <View style={styles.grid}>
             {buttons.map((item, index) => (
@@ -415,96 +484,99 @@ const gradients = [
               </View>
             ))}
           </View> */}
-          
-<ScrollView horizontal showsHorizontalScrollIndicator={false}>
-  {buttons.map((item, index) => {
-    const gradients = [
-      ["#6366f1", "#8b5cf6"],
-      ["#0ea5e9", "#06b6d4"],
-      ["#10b981", "#22c55e"],
-      ["#f59e0b", "#f97316"],
-      ["#ef4444", "#f43f5e"],
-    ];
 
-    const colors = gradients[index % gradients.length];
-  
-    return (
-      <View key={index} style={styles.cardWrapper}>
-        
-        {/* 🔥 Gradient Card */}
-        <LinearGradient
-          colors={colors as [string, string]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.premiumCard}
-        >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {buttons.map((item, index) => {
+              const gradients = [
+                ["#6366f1", "#8b5cf6"],
+                ["#0ea5e9", "#06b6d4"],
+                ["#10b981", "#22c55e"],
+                ["#f59e0b", "#f97316"],
+                ["#ef4444", "#f43f5e"],
+              ];
 
-          {/* ✨ Glass shine effect */}
-          <View style={styles.shine} />
+              const colors = gradients[index % gradients.length];
 
-          <Text style={styles.cardTitle1}>{item.Name}</Text>
 
-          <Text style={styles.amount1}>
-            ₹ {Number(item.Total).toLocaleString()}
-          </Text>
 
-        </LinearGradient>
-      </View>
-    );
-  })}
-</ScrollView>
+              return (
+
+                <View key={index} style={styles.cardWrapper}>
+
+                  {/* 🔥 Gradient Card */}
+                  <LinearGradient
+                    colors={colors as [string, string]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.premiumCard}
+                  >
+
+                    {/* ✨ Glass shine effect */}
+                    <View style={styles.shine} />
+
+                    <Text style={styles.cardTitle1}>{item.Name}</Text>
+
+                    <Text style={styles.amount1}>
+                      ₹ {Number(item.Total).toLocaleString()}
+                    </Text>
+
+                  </LinearGradient>
+                </View>
+              );
+            })}
+          </ScrollView>
 
           {/* Pie Chart */}
           <View style={styles.chartCard}>
 
-<Text style={styles.chartTitle}>Payment Mode</Text>
-         <PieChart
-  data={pieData}
-  width={screenWidth - 10}
-  height={240}
-  accessor="population"
-  backgroundColor="transparent"
-  paddingLeft="20"
-  absolute
-  hasLegend
-  chartConfig={{
-    backgroundGradientFrom: "#f8fafc",
-    backgroundGradientTo: "#f8fafc",
-    color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
-    decimalPlaces: 0,
-    propsForLabels: {
-      fontSize: 12,
-      fontWeight: "bold"
-    }
-  }}
-/>
-</View>
+            <Text style={styles.chartTitle}>Payment Mode</Text>
+            <PieChart
+              data={pieData}
+              width={screenWidth - 10}
+              height={240}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="20"
+              absolute
+              hasLegend
+              chartConfig={{
+                backgroundGradientFrom: "#f8fafc",
+                backgroundGradientTo: "#f8fafc",
+                color: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+                decimalPlaces: 0,
+                propsForLabels: {
+                  fontSize: 12,
+                  fontWeight: "bold"
+                }
+              }}
+            />
+          </View>
           {/* Bar Chart */}
-         {animatedBarData.length > 0 && (
-  <View style={styles.chartCard}>
-    <Text style={styles.chartTitle}>Sales</Text>
+          {animatedBarData.length > 0 && (
+            <View style={styles.chartCard}>
+              <Text style={styles.chartTitle}>Sales</Text>
 
-   <GiftedBarChart
-  data={animatedBarData}
-  barWidth={30}
-  spacing={30}
-  roundedTop
-  hideRules={false}
-  xAxisThickness={0}
-  yAxisThickness={0}
-  yAxisTextStyle={{ color: "#666" }}
-  noOfSections={10}
+              <GiftedBarChart
+                data={animatedBarData}
+                barWidth={30}
+                spacing={30}
+                roundedTop
+                hideRules={false}
+                xAxisThickness={0}
+                yAxisThickness={0}
+                yAxisTextStyle={{ color: "#666" }}
+                noOfSections={10}
 
-  // ✅ animation
-  isAnimated
-  animationDuration={1200}
+                // ✅ animation
+                isAnimated
+                animationDuration={1200}
 
-  // ✅ correct way to show values
-  showValuesAsTopLabel
-  topLabelTextStyle={{ color: "#333", fontSize: 15 }}
-/>
-  </View>
-)}
+                // ✅ correct way to show values
+                showValuesAsTopLabel
+                topLabelTextStyle={{ color: "#333", fontSize: 15 }}
+              />
+            </View>
+          )}
 
         </ScrollView>
       )}
@@ -520,7 +592,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f3f4f6"
   },
 
-  loader: { 
+  loader: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center"
@@ -536,10 +608,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-     padding: 7,
+    padding: 7,
     // marginTop:-20
-    
-  }, 
+
+
+  },
 
   locationCard: {
     backgroundColor: "#fff",
@@ -559,7 +632,7 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     // padding: 5
-    
+
   },
 
   smallCard: {
@@ -592,12 +665,14 @@ const styles = StyleSheet.create({
   },
 
   chartTitle: {
+    textAlign: "center",
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 10
+    marginBottom: 10,
+
   },
   //filter ///
-   toolbar: {
+  toolbar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -620,7 +695,7 @@ const styles = StyleSheet.create({
   filterText: {
     color: "#007bff",
     fontWeight: "bold",
-   
+
   },
 
   filterPanel: {
@@ -698,46 +773,86 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   cardWrapper: {
-  marginRight: 16,
-},
+    marginRight: 16,
+  },
 
-premiumCard: {
-  width: 180,
-  height: 100,
-  padding: 13,
-  borderRadius: 15,
-  justifyContent: "space-between",
+  firstrow: {
+    backgroundColor: "#fff",
+    width: "48%",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 3
+  },
 
-  // 🔥 Deep Shadow
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 10 },
-  shadowOpacity: 0.25,
-  shadowRadius: 12,
-  marginLeft:10,
-  elevation: 12,
-},
+  premiumCard: {
+    width: 180,
+    height: 100,
+    padding: 13,
+    borderRadius: 15,
+    justifyContent: "space-between",
 
-// ✨ Glass shine overlay
-shine: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  height: 50,
-  backgroundColor: "rgba(255,255,255,0.2)",
-  borderTopLeftRadius: 20,
-  borderTopRightRadius: 20,
-},
+    // 🔥 Deep Shadow
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    marginLeft: 10,
+    elevation: 12,
+  },
 
-cardTitle1: {
-  color: "rgba(255,255,255,0.85)",
-  fontSize: 20,
-},
+  // ✨ Glass shine overlay
+  shine: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 50,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
 
-amount1: {
-  color: "#fff",
-  fontSize: 20,
-  fontWeight: "bold",
-},
+  cardTitle1: {
+    color: "rgba(255,255,255,0.85)",
+    fontSize: 20,
+  },
+
+  amount1: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
+
+
+
+
+
+
+  scrollContainer: {
+    paddingHorizontal: 10,
+    alignItems: "center",
+  },
+
+  locationCard1: {
+
+    height: 75,
+    borderRadius: 12,
+    marginRight: 12, // ✅ spacing between cards
+    padding: 12,
+    justifyContent: "center",
+    // marginBottom: ,
+    marginTop: 10
+  },
+
+  locName1: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+
+
 
 });

@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from "react-native";
 
@@ -62,26 +61,26 @@ export default function Dashboard() {
 
         <View style={styles.cardGrid}>
 
-          <View style={[styles.card,{backgroundColor:"#4f46e5"}]}>
-            <Ionicons name="cash-outline" size={28} color="white"/>
+          <View style={[styles.card, { backgroundColor: "#4f46e5" }]}>
+            <Ionicons name="cash-outline" size={28} color="white" />
             <Text style={styles.cardValue}>₹12,400</Text>
             <Text style={styles.cardLabel}>Sales</Text>
           </View>
 
-          <View style={[styles.card,{backgroundColor:"#22c55e"}]}>
-            <Ionicons name="cart-outline" size={28} color="white"/>
+          <View style={[styles.card, { backgroundColor: "#22c55e" }]}>
+            <Ionicons name="cart-outline" size={28} color="white" />
             <Text style={styles.cardValue}>320</Text>
             <Text style={styles.cardLabel}>Orders</Text>
           </View>
 
-          <View style={[styles.card,{backgroundColor:"#f97316"}]}>
-            <Ionicons name="cube-outline" size={28} color="white"/>
+          <View style={[styles.card, { backgroundColor: "#f97316" }]}>
+            <Ionicons name="cube-outline" size={28} color="white" />
             <Text style={styles.cardValue}>145</Text>
             <Text style={styles.cardLabel}>Products</Text>
           </View>
 
-          <View style={[styles.card,{backgroundColor:"#ef4444"}]}>
-            <Ionicons name="trending-up-outline" size={28} color="white"/>
+          <View style={[styles.card, { backgroundColor: "#ef4444" }]}>
+            <Ionicons name="trending-up-outline" size={28} color="white" />
             <Text style={styles.cardValue}>₹4,200</Text>
             <Text style={styles.cardLabel}>Profit</Text>
           </View>
@@ -101,7 +100,7 @@ export default function Dashboard() {
             roundedTop
             showValuesAsTopLabel
             highlightEnabled
-            onPress={(item:any)=>alert("Sales: "+item.value)}
+            onPress={(item: any) => alert("Sales: " + item.value)}
           />
 
         </View>
@@ -119,7 +118,7 @@ export default function Dashboard() {
             color="#4f46e5"
             dataPointsColor="#4f46e5"
             showDataPointOnFocus
-            onPress={(item:any)=>alert("Revenue: ₹"+item.value)}
+            onPress={(item: any) => alert("Revenue: ₹" + item.value)}
           />
 
         </View>
@@ -150,63 +149,63 @@ export default function Dashboard() {
 
 const styles = StyleSheet.create({
 
-container:{
-flex:1,
-backgroundColor:"#f5f7ff"
-},
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f7ff"
+  },
 
-toolbar:{
-height:60,
-backgroundColor:"#686868",
-flexDirection:"row",
-alignItems:"center",
-justifyContent:"space-between",
-paddingHorizontal:15
-},
+  toolbar: {
+    height: 60,
+    backgroundColor: "#686868",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15
+  },
 
-title:{
-color:"white",
-fontSize:18,
-fontWeight:"bold"
-},
+  title: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold"
+  },
 
-cardGrid:{
-flexDirection:"row",
-flexWrap:"wrap",
-justifyContent:"space-between",
-padding:10
-},
+  cardGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    padding: 10
+  },
 
-card:{
-width:"48%",
-borderRadius:14,
-padding:20,
-marginBottom:12
-},
+  card: {
+    width: "48%",
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 12
+  },
 
-cardValue:{
-color:"white",
-fontSize:20,
-fontWeight:"bold",
-marginTop:8
-},
+  cardValue: {
+    color: "white",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginTop: 8
+  },
 
-cardLabel:{
-color:"white",
-marginTop:4
-},
+  cardLabel: {
+    color: "white",
+    marginTop: 4
+  },
 
-chartCard:{
-backgroundColor:"white",
-margin:10,
-padding:15,
-borderRadius:12
-},
+  chartCard: {
+    backgroundColor: "white",
+    margin: 10,
+    padding: 15,
+    borderRadius: 12
+  },
 
-sectionTitle:{
-fontSize:16,
-fontWeight:"bold",
-marginBottom:10
-}
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10
+  }
 
 });

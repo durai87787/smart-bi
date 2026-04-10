@@ -23,7 +23,7 @@ type PaymodeItem = {
 export default function PaymodeBreakup() {
 
   const [loading, setLoading] = useState(false);
-const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [data, setData] = useState<PaymodeItem[]>([]);
   const [filteredData, setFilteredData] = useState<PaymodeItem[]>([]);
@@ -31,35 +31,35 @@ const [error, setError] = useState<string | null>(null);
   // const [showFilter, setShowFilter] = useState(false);
   const [search, setSearch] = useState("");
 
-   const [loadingDept, setLoadingDept] = useState(false);
-    const [loadingCat, setLoadingCat] = useState(false);
-    const [loadingBrand, setLoadingBrand] = useState(false);
-    
-  
-    // const fromDate = "2025-08-12";
-    // const toDate = "2026-03-04";
-  
+  const [loadingDept, setLoadingDept] = useState(false);
+  const [loadingCat, setLoadingCat] = useState(false);
+  const [loadingBrand, setLoadingBrand] = useState(false);
+
+
+  // const fromDate = "2025-08-12";
+  // const toDate = "2026-03-04";
+
   ////filter
 
   const formatDate = (date: Date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
-const getToday = () => new Date();
-  
-   const [showFilter, setShowFilter] = useState(false);
-    const [selected, setSelected] = useState("day");
-  
-    const [fromDate, setFromDate] = useState(getToday());
-    const [toDate, setToDate] = useState(getToday());
-  
-    const [showFromPicker, setShowFromPicker] = useState(false);
-    const [showToPicker, setShowToPicker] = useState(false);
+  const getToday = () => new Date();
 
-    // 🔹 Select Type
+  const [showFilter, setShowFilter] = useState(false);
+  const [selected, setSelected] = useState("day");
+
+  const [fromDate, setFromDate] = useState(getToday());
+  const [toDate, setToDate] = useState(getToday());
+
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showToPicker, setShowToPicker] = useState(false);
+
+  // 🔹 Select Type
   const handleSelect = (type: string) => {
     setSelected(type);
 
@@ -84,31 +84,31 @@ const getToday = () => new Date();
 
 
 
-const getWeekRange = () => {
-  const today = new Date();
-  const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+  const getWeekRange = () => {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
 
-  const monday = new Date(today.setDate(diff));
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
+    const monday = new Date(today.setDate(diff));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
 
-  return { from: monday, to: sunday };
-};
+    return { from: monday, to: sunday };
+  };
 
-const getMonthRange = () => {
-  const today = new Date();
-  const first = new Date(today.getFullYear(), today.getMonth(), 1);
-  const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  const getMonthRange = () => {
+    const today = new Date();
+    const first = new Date(today.getFullYear(), today.getMonth(), 1);
+    const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
-  return { from: first, to: last };
-};
+    return { from: first, to: last };
+  };
 
   // 🔹 Apply
   const handleApply = () => {
     console.log("From:", formatDate(fromDate));
     console.log("To:", formatDate(toDate));
-   loadPaymode();
+    loadPaymode();
     setShowFilter(false);
   };
 
@@ -127,72 +127,72 @@ const getMonthRange = () => {
   //   }
   // };
 
-//   const loadPaymode = async () => {
-//   setLoading(true);
-//   setError(null);
+  //   const loadPaymode = async () => {
+  //   setLoading(true);
+  //   setError(null);
 
-//   try {
-//     const res = await fetch(`${BASE_URL}/paymode-breakup`);
-//     const result = await res.json();
+  //   try {
+  //     const res = await fetch(`${BASE_URL}/paymode-breakup`);
+  //     const result = await res.json();
 
-//     if (result && result.length > 0) {
-//       setData(result);
-//       setFilteredData(result);
-//     } else {
-//       setData([]);
-//       setFilteredData([]);
-//     }
+  //     if (result && result.length > 0) {
+  //       setData(result);
+  //       setFilteredData(result);
+  //     } else {
+  //       setData([]);
+  //       setFilteredData([]);
+  //     }
 
-//   } catch (err) {
-//     console.log("API Error:", err);
-//     setError("Failed to load data");
-//     setData([]);
-//     setFilteredData([]);
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+  //   } catch (err) {
+  //     console.log("API Error:", err);
+  //     setError("Failed to load data");
+  //     setData([]);
+  //     setFilteredData([]);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-const loadPaymode = async () => {
-  setLoading(true);
-  setError(null);
+  const loadPaymode = async () => {
+    setLoading(true);
+    setError(null);
 
-  try {
-    // ✅ format dates (example: YYYY-MM-DD)
-    const from = formatDate(fromDate);
-    const to = formatDate(toDate);
+    try {
+      // ✅ format dates (example: YYYY-MM-DD)
+      const from = formatDate(fromDate);
+      const to = formatDate(toDate);
 
-    const res = await fetch(
-      `${BASE_URL}/api/paymode-breakup?from=${from}&to=${to}`
-    );
+      const res = await fetch(
+        `${BASE_URL}/api/paymode-breakup?from=${from}&to=${to}`
+      );
 
-    // ✅ check response status
-    if (!res.ok) {
-      throw new Error(`Server error: ${res.status}`);
-    }
+      // ✅ check response status
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
 
-    const result = await res.json();
+      const result = await res.json();
 
-    console.log("PAYMODE DATA:", result);
+      console.log("PAYMODE DATA:", result);
 
-    if (Array.isArray(result) && result.length > 0) {
-      setData(result);
-      setFilteredData(result);
-    } else {
+      if (Array.isArray(result) && result.length > 0) {
+        setData(result);
+        setFilteredData(result);
+      } else {
+        setData([]);
+        setFilteredData([]);
+      }
+
+    } catch (err) {
+      console.log("API Error:", err);
+
+      setError("Failed to load data");
       setData([]);
       setFilteredData([]);
+    } finally {
+      setLoading(false);
     }
-
-  } catch (err) {
-    console.log("API Error:", err);
-
-    setError("Failed to load data");
-    setData([]);
-    setFilteredData([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   useEffect(() => {
@@ -250,176 +250,176 @@ const loadPaymode = async () => {
       <ScrollView>
 
         <Stack.Screen
-              options={{
-                title: "PayMode BreakUp",
-                headerRight: () => (
-                   <TouchableOpacity
-          
-          onPress={() => setShowFilter(!showFilter)}
-        >
-          <Text style={{marginRight:20}}>
-          <Ionicons  name="filter-outline" size={24} color="white" />
-             </Text> 
-          {/* <Text style={styles.filterText}>
-            {showFilter ? "Close" : "Filter"}*/}
-       
-        </TouchableOpacity>
-                )
-              }}
-            />
-        {showFilter && (
-        <View style={styles.filterPanel}>
-
-          {/* 🔘 Options */}
-          <View style={styles.buttonRow}>
-            {["day", "week", "month", "custom"].map((item) => (
+          options={{
+            title: "PayMode BreakUp",
+            headerRight: () => (
               <TouchableOpacity
-                key={item}
-                style={[
-                  styles.optionBtn,
-                  selected === item && styles.activeBtn,
-                ]}
-                onPress={() => handleSelect(item)}
+
+                onPress={() => setShowFilter(!showFilter)}
               >
-                <Text style={styles.btnText}>{item.toUpperCase()}</Text>
+                <Text style={{ marginRight: 20 }}>
+                  <Ionicons name="filter-outline" size={24} color="white" />
+                </Text>
+                {/* <Text style={styles.filterText}>
+            {showFilter ? "Close" : "Filter"}*/}
+
               </TouchableOpacity>
-            ))}
+            )
+          }}
+        />
+        {showFilter && (
+          <View style={styles.filterPanel}>
+
+            {/* 🔘 Options */}
+            <View style={styles.buttonRow}>
+              {["day", "week", "month", "custom"].map((item) => (
+                <TouchableOpacity
+                  key={item}
+                  style={[
+                    styles.optionBtn,
+                    selected === item && styles.activeBtn,
+                  ]}
+                  onPress={() => handleSelect(item)}
+                >
+                  <Text style={styles.btnText}>{item.toUpperCase()}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+
+            {/* 📅 SAME ROW DATE */}
+            <View style={styles.dateRow}>
+
+              {/* FROM */}
+              <View style={styles.dateBox}>
+                {/* <Text style={styles.label}>From</Text> */}
+
+                {Platform.OS === "web" ? (
+                  <input
+                    type="date"
+                    value={formatDate(fromDate)}
+                    onChange={(e) => {
+                      const value = e.target.value; // yyyy-mm-dd
+                      if (!value) return;
+
+                      const [y, m, d] = value.split("-");
+                      const newDate = new Date(
+                        Number(y),
+                        Number(m) - 1,
+                        Number(d)
+                      );
+
+                      setFromDate(newDate);
+                    }}
+                    style={styles.webInput}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.input}
+                    onPress={() => {
+                      if (selected === "custom") {
+                        setShowFromPicker(true);
+                      }
+                    }}
+                  >
+                    <Text>{formatDate(fromDate)}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* TO */}
+              <View style={styles.dateBox}>
+                {/* <Text style={styles.label}>To</Text> */}
+
+                {Platform.OS === "web" ? (
+                  <input
+                    type="date"
+                    value={formatDate(toDate)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (!value) return;
+
+                      const [y, m, d] = value.split("-");
+                      const newDate = new Date(
+                        Number(y),
+                        Number(m) - 1,
+                        Number(d)
+                      );
+
+                      setToDate(newDate);
+                    }}
+                    style={styles.webInput}
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.input}
+                    onPress={() => {
+                      if (selected === "custom") {
+                        setShowToPicker(true);
+                      }
+                    }}
+                  >
+                    <Text>{formatDate(toDate)}</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+            </View>
+
+            {/* 📅 MOBILE PICKERS */}
+            {Platform.OS !== "web" && showFromPicker && (
+              <DateTimePicker
+                value={fromDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  setShowFromPicker(false);
+                  if (date) {
+                    setFromDate(date);
+
+                    // ✅ auto fix: if from > to
+                    if (date > toDate) {
+                      setToDate(date);
+                    }
+                  }
+                }}
+              />
+            )}
+
+            {Platform.OS !== "web" && showToPicker && (
+              <DateTimePicker
+                value={toDate}
+                mode="date"
+                display="default"
+                onChange={(event, date) => {
+                  setShowToPicker(false);
+                  if (date) {
+                    setToDate(date);
+
+                    // ✅ auto fix: if to < from
+                    if (date < fromDate) {
+                      setFromDate(date);
+                    }
+                  }
+                }}
+              />
+            )}
+
+
+            {/* ✅ Apply */}
+            <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+              <Text style={styles.applyText}>Apply</Text>
+            </TouchableOpacity>
+
           </View>
-
-
-          {/* 📅 SAME ROW DATE */}
-        <View style={styles.dateRow}>
-
-  {/* FROM */}
-  <View style={styles.dateBox}>
-    <Text style={styles.label}>From</Text>
-
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(fromDate)}
-        onChange={(e) => {
-          const value = e.target.value; // yyyy-mm-dd
-          if (!value) return;
-
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
-
-          setFromDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowFromPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(fromDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-
-  {/* TO */}
-  <View style={styles.dateBox}>
-    <Text style={styles.label}>To</Text>
-
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(toDate)}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (!value) return;
-
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
-
-          setToDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowToPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(toDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
-
-</View>
-
-{/* 📅 MOBILE PICKERS */}
-{Platform.OS !== "web" && showFromPicker && (
-  <DateTimePicker
-    value={fromDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowFromPicker(false);
-      if (date) {
-        setFromDate(date);
-
-        // ✅ auto fix: if from > to
-        if (date > toDate) {
-          setToDate(date);
-        }
-      }
-    }}
-  />
-)}
-
-{Platform.OS !== "web" && showToPicker && (
-  <DateTimePicker
-    value={toDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowToPicker(false);
-      if (date) {
-        setToDate(date);
-
-        // ✅ auto fix: if to < from
-        if (date < fromDate) {
-          setFromDate(date);
-        }
-      }
-    }}
-  />
-)}
-
-
-          {/* ✅ Apply */}
-          <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-            <Text style={styles.applyText}>Apply</Text>
-          </TouchableOpacity>
-
-        </View>
-      )}
+        )}
 
         {/* 🧾 Cards */}
 
-      
+
         <View style={styles.cardContainer}>
 
-          
+
 
           {filteredData.map((item, index) => (
 
@@ -431,7 +431,7 @@ const loadPaymode = async () => {
               ]}
             >
 
-              
+
 
               {/* Top Row */}
               <View style={styles.row}>
@@ -462,22 +462,23 @@ const loadPaymode = async () => {
             </View>
 
           ))}
-         
-        </View>
-  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-    
-    {loading ? (
-      <ActivityIndicator size="large" color="#007bff" />
-    ) : error ? (
-      <Text>{error}</Text>
-    ) : filteredData.length === 0 ? (
-      <Text>No data found</Text>
-    ) : (
-      // 👉 Your actual UI (FlatList / Table)
-      <Text></Text>
-    )}
 
-  </View>
+        </View>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 300 }}>
+
+          {loading ? (
+            <ActivityIndicator size="large" color="#007bff" />
+          ) : error ? (
+            <Text>{error}</Text>
+          ) : filteredData.length === 0 ? (
+
+            <Text>No data found</Text>
+          ) : (
+            // 👉 Your actual UI (FlatList / Table)
+            <Text></Text>
+          )}
+
+        </View>
       </ScrollView>
 
     </View>
@@ -554,7 +555,7 @@ const styles = StyleSheet.create({
 
 
   //filter ///
-   toolbar: {
+  toolbar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -577,7 +578,7 @@ const styles = StyleSheet.create({
   filterText: {
     color: "#007bff",
     fontWeight: "bold",
-   
+
   },
 
   filterPanel: {

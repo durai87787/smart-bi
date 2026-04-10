@@ -4,18 +4,17 @@ import {
     ScrollView,
     StyleSheet,
     Text,
-    TextInput,
     TouchableOpacity,
     View
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, useRouter } from "expo-router";
 import { BASE_URL } from "./config/api";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
-const [loading, setLoading] = useState(false);
+
 const formatDate = (date: Date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -52,6 +51,15 @@ type PurchaseData = {
     POCount: number;
 };
 
+const gradients = [
+    ["#43cea2", "#185a9d"],
+    ["#36d1dc", "#5b86e5"],
+    ["#f7971e", "#ffd200"],
+    ["#c471f5", "#fa71cd"],
+] as const;
+
+
+
 export default function Purchase() {
 
     const [showFilter, setShowFilter] = useState(false);
@@ -64,6 +72,15 @@ export default function Purchase() {
     const [showToPicker, setShowToPicker] = useState(false);
 
     const [loading, setLoading] = useState(false);
+
+
+    type PurchaseData = {
+        Name: string;
+        Total: number;
+    };
+
+    const [data, setData] = useState<PurchaseData[]>([]);
+
     // 🔹 Select Type
     const handleSelect = (type: string) => {
         setSelected(type);
@@ -103,76 +120,88 @@ export default function Purchase() {
     // const [fromDate, setFromDate] = useState("2025-08-12");
     // const [toDate, setToDate] = useState("2026-03-10");
 
-    const [data, setData] = useState<PurchaseData | null>(null);
 
-//     const loadPurchase = () => {
-//    console.log(fromDate,toDate);
-   
-//         fetch(`${BASE_URL}/purchase-summary`, {
-//             method: "POST",
-//             headers: {
-//                 "Content-Type": "application/json"
-//             },
-//             body: JSON.stringify({
-//                 FromDate: fromDate,
-//                 ToDate: toDate
-//             })
-//         })
-//             .then(res => res.json())
-//             .then(result => {
 
-//                 console.log("Purchase API:", result);
+    //     const loadPurchase = () => {
+    //    console.log(fromDate,toDate);
 
-//                 if (result.length > 0) {
-//                     setData(result[0]);
-//                 }
+    //         fetch(`${BASE_URL}/purchase-summary`, {
+    //             method: "POST",
+    //             headers: {
+    //                 "Content-Type": "application/json"
+    //             },
+    //             body: JSON.stringify({
+    //                 FromDate: fromDate,
+    //                 ToDate: toDate
+    //             })
+    //         })
+    //             .then(res => res.json())
+    //             .then(result => {
 
-//             })
-//             .catch(err => {
-//                 console.log("API Error:", err);
-//             });
+    //                 console.log("Purchase API:", result);
 
-//     };
+    //                 if (result.length > 0) {
+    //                     setData(result[0]);
+    //                 }
 
-const loadPurchase = () => {
-  console.log('fromDate',formatDate(fromDate), formatDate(toDate));
+    //             })
+    //             .catch(err => {
+    //                 console.log("API Error:", err);
+    //             });
 
-  setLoading(true); // ✅ START LOADING
+    //     };
 
-  fetch(`${BASE_URL}/purchase-summary`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      FromDate: formatDate(fromDate),
-      ToDate: formatDate(toDate)
-    })
-  })
-    .then(res => res.json())
-    .then(result => {
-      console.log("Purchase API:", result);
+    const loadPurchase = () => {
+        console.log('fromDate', formatDate(fromDate), formatDate(toDate));
 
-      if (result.length > 0) {
-        setData(result[0]);
-      }
-    })
-    .catch(err => {
-      console.log("API Error:", err);
-    })
-    .finally(() => {
-      setLoading(false); // ✅ STOP LOADING
-    });
-};
+        setLoading(true); // ✅ START LOADING
+
+        fetch(`${BASE_URL}/purchase-summary`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                FromDate: formatDate(fromDate),
+                ToDate: formatDate(toDate)
+            })
+        })
+            .then(res => res.json())
+            .then(result => {
+                console.log("Purchase API:", result);
+
+                // if (result.length > 0) {
+                //     setData(result[0]);
+                // }
+                setData(result);
+            })
+            .catch(err => {
+                console.log("API Error:", err);
+            })
+            .finally(() => {
+                setLoading(false); // ✅ STOP LOADING
+            });
+    };
 
     useEffect(() => {
         loadPurchase();
     }, []);
 
+    const getIcon = (name: string): any => {
+        const text = name.toLowerCase();
+
+        if (text.includes("purchase")) return "cash-outline";
+        if (text.includes("vendor")) return "people-outline";
+        if (text.includes("grn")) return "cube-outline";
+        if (text.includes("po")) return "document-text-outline";
+
+        return "stats-chart-outline";
+    };
+
     return (
 
         <View style={styles.container}>
-     <ScrollView>
+            <ScrollView>
                 <Stack.Screen
                     options={{
                         title: "Purchase",
@@ -192,7 +221,7 @@ const loadPurchase = () => {
                     }}
                 />
 
-                 {/* 🔽 Filter Panel */}
+                {/* 🔽 Filter Panel */}
                 {showFilter && (
                     <View style={styles.filterPanel}>
 
@@ -342,84 +371,29 @@ const loadPurchase = () => {
 
                 {/* Dashboard Cards */}
 
+
+
                 <View style={styles.cardContainer}>
+                    {Array.isArray(data) &&
+                        data.map((item: any, index: number) => {
+                            const colors = gradients[index % gradients.length];
 
-                    {/* Total Purchase */}
+                            return (
+                                <LinearGradient
+                                    key={index}
+                                    colors={colors}
+                                    style={styles.card}
+                                >
+                                    <Text style={styles.cardTitle}>{item.Name}</Text>
 
-                    <LinearGradient
-                        colors={["#43cea2", "#185a9d"]}
-                        style={styles.card}
-                    >
-
-                        <Ionicons name="cash-outline" size={38} color="white" />
-
-                        <Text style={styles.cardTitle}>
-                            Total Purchase
-                        </Text>
-
-                        <Text style={styles.cardValue}>
-                            ₹ {data?.TotalPurchase ?? 0}
-                        </Text>
-
-                    </LinearGradient>
-
-                    {/* Vendor Count */}
-
-                    <LinearGradient
-                        colors={["#36d1dc", "#5b86e5"]}
-                        style={styles.card}
-                    >
-
-                        <Ionicons name="people-outline" size={38} color="white" />
-
-                        <Text style={styles.cardTitle}>
-                            Vendor Count
-                        </Text>
-
-                        <Text style={styles.cardValue}>
-                            {data?.VendorCount ?? 0}
-                        </Text>
-
-                    </LinearGradient>
-
-                    {/* GRN Count */}
-
-                    <LinearGradient
-                        colors={["#f7971e", "#ffd200"]}
-                        style={styles.card}
-                    >
-
-                        <Ionicons name="cube-outline" size={38} color="white" />
-
-                        <Text style={styles.cardTitle}>
-                            GRN Count
-                        </Text>
-
-                        <Text style={styles.cardValue}>
-                            {data?.GRNCount ?? 0}
-                        </Text>
-
-                    </LinearGradient>
-
-                    {/* PO Count */}
-
-                    <LinearGradient
-                        colors={["#c471f5", "#fa71cd"]}
-                        style={styles.card}
-                    >
-
-                        <Ionicons name="document-text-outline" size={38} color="white" />
-
-                        <Text style={styles.cardTitle}>
-                            PO Count
-                        </Text>
-
-                        <Text style={styles.cardValue}>
-                            {data?.POCount ?? 0}
-                        </Text>
-
-                    </LinearGradient>
-
+                                    <Text style={styles.cardValue}>
+                                        {item.Name?.toLowerCase().includes("purchase")
+                                            ? ` ${Number(item.Total ?? 0).toLocaleString()}`
+                                            : item.Total ?? 0}
+                                    </Text>
+                                </LinearGradient>
+                            );
+                        })}
                 </View>
 
             </ScrollView>

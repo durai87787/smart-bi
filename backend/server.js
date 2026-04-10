@@ -242,6 +242,126 @@ app.get("/dashboard/bar", async (req, res) => {
 
 });
 
+
+
+// with location 
+
+app.get("/dashboard/buttons-location", async (req, res) => {
+  try {
+    const { from, to, location } = req.query;
+
+    console.log("FROM:", from);
+    console.log("TO:", to);
+    console.log("LOCATION:", location);
+
+    // ✅ Validate params
+    if (!from || !to || !location) {
+      return res.status(400).json({
+        message: "Missing from/to/location"
+      });
+    }
+
+    // ✅ Validate date
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+
+    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      return res.status(400).json({
+        message: "Invalid date format"
+      });
+    }
+
+    const pool = await poolPromise;
+    const request = pool.request();
+
+    // ✅ Pass inputs to SP
+    request.input("loctCode", sql.NVarChar, location);
+    request.input("fromDate", sql.DateTime, from);
+    request.input("toDate", sql.DateTime, to);
+
+    // 🔥 New SP call
+    const result = await request.execute(
+      "sp_bi_dashboard_button_withlive_location_code"
+    );
+
+    res.json(result?.recordset || []);
+
+  } catch (err) {
+    console.error("🔥 BUTTON API ERROR:", err);
+
+    res.status(500).json({
+      message: "Buttons API failed",
+      error: err.message
+    });
+  }
+});
+
+
+// ------------------
+app.get("/dashboard/pie-location", async (req, res) => {
+  try {
+    const { from, to, location } = req.query;
+
+    console.log("FROM:", from);
+    console.log("TO:", to);
+    console.log("LOCATION:", location);
+
+    // ✅ Validate
+    if (!from || !to || !location) {
+      return res.status(400).json({
+        message: "Missing from/to/location"
+      });
+    }
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("loctCode", sql.NVarChar, location) // ✅ NEW
+      .input("from", sql.DateTime, from)
+      .input("to", sql.DateTime, to)
+      .execute("sp_bi_piChart_withlive_location_code"); // ✅ NEW SP
+
+    res.json(result.recordset);
+
+  } catch (err) {
+    console.log("Pie Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// --------------------
+
+app.get("/dashboard/bar-location", async (req, res) => {
+  try {
+    const { from, to, location } = req.query;
+
+    console.log("FROM:", from);
+    console.log("TO:", to);
+    console.log("LOCATION:", location);
+
+    // ✅ Validate
+    if (!from || !to || !location) {
+      return res.status(400).json({
+        message: "Missing from/to/location"
+      });
+    }
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("loctCode", sql.NVarChar, location) // ✅ NEW
+      .input("fromDate", sql.DateTime, from)
+      .input("toDate", sql.DateTime, to)
+      .execute("sp_bi_barChart_with_location_code"); // ✅ NEW SP
+
+    res.json(result.recordset);
+
+  } catch (err) {
+    console.log("Bar Error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 /* ---------------- USERS ---------------- */
 //////
 
@@ -331,7 +451,7 @@ app.post("/brand-sales", async (req, res) => {
     }
 
     const pool = await poolPromise;
-    
+
 
     const result = await pool.request()
       .input("FromDate", sql.DateTime, new Date(FromDate))
@@ -349,6 +469,30 @@ app.post("/brand-sales", async (req, res) => {
   } catch (err) {
     console.error("Brand ERROR:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// inventory list
+
+app.get("/api/inventory", async (req, res) => {
+  try {
+    const { DeptCode, CatCode, BCode, FromDate, ToDate } = req.query;
+
+    const pool = await poolPromise;
+
+    const result = await pool
+      .request()
+      .input("DeptCode", sql.NVarChar, DeptCode)
+      .input("CatCode", sql.NVarChar, CatCode)
+      .input("BCode", sql.NVarChar, BCode)
+      .input("FromDate", sql.DateTime, new Date(FromDate))
+      .input("ToDate", sql.DateTime, new Date(ToDate))
+      .execute("sp_bi_InventoryWiseSales");
+
+    res.json(result.recordset);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: err.message });
   }
 });
 
@@ -531,7 +675,7 @@ app.get("/api/paymode-breakup", async (req, res) => {
 //       FROM vw_POS_PaymodeDetail
 //       GROUP BY Paymode
 //     `);
-    
+
 
 //     res.json(result.recordset);
 

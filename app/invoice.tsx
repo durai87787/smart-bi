@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -31,92 +31,92 @@ export default function InvoiceList() {
   const [error, setError] = useState("");
 
 
-//    const [data, setData] = useState<PaymodeItem[]>([]);
-    // const [filteredData, setFilteredData] = useState<PaymodeItem[]>([]);
-  
-    // const [showFilter, setShowFilter] = useState(false);
-    const [search, setSearch] = useState("");
-  
-     const [loadingDept, setLoadingDept] = useState(false);
-      const [loadingCat, setLoadingCat] = useState(false);
-      const [loadingBrand, setLoadingBrand] = useState(false);
-      
-    
-      // const fromDate = "2025-08-12";
-      // const toDate = "2026-03-04";
-    
-    ////filter
-  
-    const formatDate = (date: Date) => {
+  //    const [data, setData] = useState<PaymodeItem[]>([]);
+  // const [filteredData, setFilteredData] = useState<PaymodeItem[]>([]);
+
+  // const [showFilter, setShowFilter] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const [loadingDept, setLoadingDept] = useState(false);
+  const [loadingCat, setLoadingCat] = useState(false);
+  const [loadingBrand, setLoadingBrand] = useState(false);
+
+
+  // const fromDate = "2025-08-12";
+  // const toDate = "2026-03-04";
+
+  ////filter
+
+  const formatDate = (date: Date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
     return `${y}-${m}-${d}`;
   };
-  
+
   const getToday = () => new Date();
-    
-     const [showFilter, setShowFilter] = useState(false);
-      const [selected, setSelected] = useState("day");
-    
-      const [fromDate, setFromDate] = useState(getToday());
-      const [toDate, setToDate] = useState(getToday());
-    
-      const [showFromPicker, setShowFromPicker] = useState(false);
-      const [showToPicker, setShowToPicker] = useState(false);
-  
-      // 🔹 Select Type
-    const handleSelect = (type: string) => {
-      setSelected(type);
-  
-      if (type === "day") {
-        const today = new Date();
-        setFromDate(today);
-        setToDate(today);
-      }
-  
-      if (type === "week") {
-        const { from, to } = getWeekRange();
-        setFromDate(from);
-        setToDate(to);
-      }
-  
-      if (type === "month") {
-        const { from, to } = getMonthRange();
-        setFromDate(from);
-        setToDate(to);
-      }
-    };
-  
-  
-  
+
+  const [showFilter, setShowFilter] = useState(false);
+  const [selected, setSelected] = useState("day");
+
+  const [fromDate, setFromDate] = useState(getToday());
+  const [toDate, setToDate] = useState(getToday());
+
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showToPicker, setShowToPicker] = useState(false);
+
+  // 🔹 Select Type
+  const handleSelect = (type: string) => {
+    setSelected(type);
+
+    if (type === "day") {
+      const today = new Date();
+      setFromDate(today);
+      setToDate(today);
+    }
+
+    if (type === "week") {
+      const { from, to } = getWeekRange();
+      setFromDate(from);
+      setToDate(to);
+    }
+
+    if (type === "month") {
+      const { from, to } = getMonthRange();
+      setFromDate(from);
+      setToDate(to);
+    }
+  };
+
+
+
   const getWeekRange = () => {
     const today = new Date();
     const day = today.getDay();
     const diff = today.getDate() - day + (day === 0 ? -6 : 1);
-  
+
     const monday = new Date(today.setDate(diff));
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-  
+
     return { from: monday, to: sunday };
   };
-  
+
   const getMonthRange = () => {
     const today = new Date();
     const first = new Date(today.getFullYear(), today.getMonth(), 1);
     const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-  
+
     return { from: first, to: last };
   };
-  
-    // 🔹 Apply
-    const handleApply = () => {
-      console.log("From:", formatDate(fromDate));
-      console.log("To:", formatDate(toDate));
-     loadInvoices();
-      setShowFilter(false);
-    };
+
+  // 🔹 Apply
+  const handleApply = () => {
+    console.log("From:", formatDate(fromDate));
+    console.log("To:", formatDate(toDate));
+    loadInvoices();
+    setShowFilter(false);
+  };
 
   const loadInvoices = () => {
     setLoading(true);
@@ -194,25 +194,25 @@ export default function InvoiceList() {
 
   return (
     <View style={styles.container}>
-     <Stack.Screen
-              options={{
-                title: "Invoice",
-                headerRight: () => (
-                   <TouchableOpacity
-          
-          onPress={() => setShowFilter(!showFilter)}
-        >
-          <Text style={{marginRight:20}}>
-          <Ionicons  name="filter-outline" size={24} color="white" />
-             </Text> 
-          {/* <Text style={styles.filterText}>
+      <Stack.Screen
+        options={{
+          title: "Invoice",
+          headerRight: () => (
+            <TouchableOpacity
+
+              onPress={() => setShowFilter(!showFilter)}
+            >
+              <Text style={{ marginRight: 20 }}>
+                <Ionicons name="filter-outline" size={24} color="white" />
+              </Text>
+              {/* <Text style={styles.filterText}>
             {showFilter ? "Close" : "Filter"}*/}
-       
-        </TouchableOpacity>
-                )
-              }}
-            />
-       {showFilter && (
+
+            </TouchableOpacity>
+          )
+        }}
+      />
+      {showFilter && (
         <View style={styles.filterPanel}>
 
           {/* 🔘 Options */}
@@ -233,122 +233,122 @@ export default function InvoiceList() {
 
 
           {/* 📅 SAME ROW DATE */}
-        <View style={styles.dateRow}>
+          <View style={styles.dateRow}>
 
-  {/* FROM */}
-  <View style={styles.dateBox}>
-    {/* <Text style={styles.label}>From</Text> */}
+            {/* FROM */}
+            <View style={styles.dateBox}>
+              {/* <Text style={styles.label}>From</Text> */}
 
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(fromDate)}
-        onChange={(e) => {
-          const value = e.target.value; // yyyy-mm-dd
-          if (!value) return;
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  value={formatDate(fromDate)}
+                  onChange={(e) => {
+                    const value = e.target.value; // yyyy-mm-dd
+                    if (!value) return;
 
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
+                    const [y, m, d] = value.split("-");
+                    const newDate = new Date(
+                      Number(y),
+                      Number(m) - 1,
+                      Number(d)
+                    );
 
-          setFromDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowFromPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(fromDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
+                    setFromDate(newDate);
+                  }}
+                  style={styles.webInput}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => {
+                    if (selected === "custom") {
+                      setShowFromPicker(true);
+                    }
+                  }}
+                >
+                  <Text>{formatDate(fromDate)}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-  {/* TO */}
-  <View style={styles.dateBox}>
-    {/* <Text style={styles.label}>To</Text> */}
+            {/* TO */}
+            <View style={styles.dateBox}>
+              {/* <Text style={styles.label}>To</Text> */}
 
-    {Platform.OS === "web" ? (
-      <input
-        type="date"
-        value={formatDate(toDate)}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (!value) return;
+              {Platform.OS === "web" ? (
+                <input
+                  type="date"
+                  value={formatDate(toDate)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (!value) return;
 
-          const [y, m, d] = value.split("-");
-          const newDate = new Date(
-            Number(y),
-            Number(m) - 1,
-            Number(d)
-          );
+                    const [y, m, d] = value.split("-");
+                    const newDate = new Date(
+                      Number(y),
+                      Number(m) - 1,
+                      Number(d)
+                    );
 
-          setToDate(newDate);
-        }}
-        style={styles.webInput}
-      />
-    ) : (
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => {
-          if (selected === "custom") {
-            setShowToPicker(true);
-          }
-        }}
-      >
-        <Text>{formatDate(toDate)}</Text>
-      </TouchableOpacity>
-    )}
-  </View>
+                    setToDate(newDate);
+                  }}
+                  style={styles.webInput}
+                />
+              ) : (
+                <TouchableOpacity
+                  style={styles.input}
+                  onPress={() => {
+                    if (selected === "custom") {
+                      setShowToPicker(true);
+                    }
+                  }}
+                >
+                  <Text>{formatDate(toDate)}</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
-</View>
+          </View>
 
-{/* 📅 MOBILE PICKERS */}
-{Platform.OS !== "web" && showFromPicker && (
-  <DateTimePicker
-    value={fromDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowFromPicker(false);
-      if (date) {
-        setFromDate(date);
+          {/* 📅 MOBILE PICKERS */}
+          {Platform.OS !== "web" && showFromPicker && (
+            <DateTimePicker
+              value={fromDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowFromPicker(false);
+                if (date) {
+                  setFromDate(date);
 
-        // ✅ auto fix: if from > to
-        if (date > toDate) {
-          setToDate(date);
-        }
-      }
-    }}
-  />
-)}
+                  // ✅ auto fix: if from > to
+                  if (date > toDate) {
+                    setToDate(date);
+                  }
+                }
+              }}
+            />
+          )}
 
-{Platform.OS !== "web" && showToPicker && (
-  <DateTimePicker
-    value={toDate}
-    mode="date"
-    display="default"
-    onChange={(event, date) => {
-      setShowToPicker(false);
-      if (date) {
-        setToDate(date);
+          {Platform.OS !== "web" && showToPicker && (
+            <DateTimePicker
+              value={toDate}
+              mode="date"
+              display="default"
+              onChange={(event, date) => {
+                setShowToPicker(false);
+                if (date) {
+                  setToDate(date);
 
-        // ✅ auto fix: if to < from
-        if (date < fromDate) {
-          setFromDate(date);
-        }
-      }
-    }}
-  />
-)}
+                  // ✅ auto fix: if to < from
+                  if (date < fromDate) {
+                    setFromDate(date);
+                  }
+                }
+              }}
+            />
+          )}
 
 
           {/* ✅ Apply */}
@@ -377,7 +377,7 @@ export default function InvoiceList() {
         </View>
       ) : data.length === 0 ? (
         <View style={styles.center}>
-          <Ionicons name="document-outline" size={60} color="#ccc" />
+          <Ionicons name="alert-circle-outline" size={40} color="#999" />
           <Text style={styles.noDataText}>No Data Found</Text>
         </View>
       ) : (
@@ -507,19 +507,19 @@ const styles = StyleSheet.create({
     fontWeight: "bold"
   },
   //filter ///
-//    toolbar: {
-//     flexDirection: "row",
-//     justifyContent: "space-between",
-//     alignItems: "center",
-//     padding: 15,
-//     backgroundColor: "#007bff",
-//   },
+  //    toolbar: {
+  //     flexDirection: "row",
+  //     justifyContent: "space-between",
+  //     alignItems: "center",
+  //     padding: 15,
+  //     backgroundColor: "#007bff",
+  //   },
 
-//   title: {
-//     color: "#fff",
-//     fontSize: 18,
-//     fontWeight: "bold",
-//   },
+  //   title: {
+  //     color: "#fff",
+  //     fontSize: 18,
+  //     fontWeight: "bold",
+  //   },
 
   filterBtn: {
     backgroundColor: "#fff",
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
   filterText: {
     color: "#007bff",
     fontWeight: "bold",
-   
+
   },
 
   filterPanel: {

@@ -1,31 +1,106 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Stack, useRouter } from "expo-router";
-import React, { useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { Stack, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   FlatList,
   Modal,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
-export default function Home() {
+const HeaderCard = () => {
+  const [currentTime, setCurrentTime] = useState(new Date());
+  const [userName, setUserName] = useState("User");
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    const fetchUser = async () => {
+      try {
+        const userStr = await AsyncStorage.getItem("user");
+        if (userStr) {
+          try {
+            const userObj = JSON.parse(userStr);
+            if (userObj && userObj.name) {
+              setUserName(userObj.name);
+            } else if (userObj && userObj.userName) {
+              setUserName(userObj.userName);
+            } else if (userObj && userObj.userCode) {
+              setUserName(userObj.userCode.trim());
+            } else {
+              setUserName("User");
+            }
+          } catch (e) {
+            setUserName("User");
+          }
+        }
+      } catch (err) {
+        console.log("Error fetching user", err);
+      }
+    };
+    fetchUser();
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedDate = currentTime.toLocaleDateString("en-US", {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+
+  const formattedTime = currentTime.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  return (
+    // <View style={styles.headerCard}>
+    <LinearGradient
+      colors={["#ff9a9e", "#fad0c4", "#a18cd1", "#a18cd1",]}  // 🔥 3 colors
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 0 }} // horizontal
+      style={styles.headerCard}
+    >
+      <View style={styles.userInfo}>
+        <View style={styles.userAvatar}>
+          <Ionicons name="person" size={24} color="#3498db" />
+        </View>
+        <View>
+          <Text style={styles.welcomeText}>Welcome back,</Text>
+          <Text style={styles.userNameText}>{userName}</Text>
+        </View>
+      </View>
+      <View style={styles.timeInfo}>
+        <Text style={styles.timeText}>{formattedTime}</Text>
+        <Text style={styles.dateText}>{formattedDate}</Text>
+      </View>
+    </LinearGradient>
+  );
+};
+
+export default function Home() {
   const router = useRouter();
   const [logoutVisible, setLogoutVisible] = useState(false);
 
+  // Classic dashboard colors
   const cards = [
-    { title: "Dashboard", icon: "qr-code", color: "#cb2ca6", route: "/dashboard" },
-    { title: "Department Wise Sales", icon: "newspaper", color: "#3b82f6", route: "/department-wise-sales" },
-    { title: "PayMode BreakUp", icon: "stats-chart", color: "#ef4444", route: "/paymode-breakup" },
-    { title: "Purchase", icon: "archive", color: "#10b981", route: "/purchase" },
-    { title: "Purchase Wise Sales", icon: "bar-chart", color: "#f59e0b", route: "/purchase-wise-sales" },
-    { title: "Vendors Wise Purchase", icon: "logo-usd", color: "#8b5cf6", route: "/vendors-wise-purchase" },
-    { title: "Live Sales", icon: "pulse", color: "#14b8a6", route: "/livesales" },
-    { title: "Invoice", icon: "wallet", color: "#f97316", route: "/invoice" },
-    // { title: "Invoice", icon: "wallet", color: "#f97316", route: "/filter" }
+    { title: "Dashboard", icon: "qr-code", color: "#3498db", route: "/dashboard" },
+    { title: "Department Wise Sales", icon: "newspaper", color: "#1abc9c", route: "/department-wise-sales" },
+    { title: "PayMode BreakUp", icon: "pie-chart", color: "#e74c3c", route: "/paymode-breakup" },
+    { title: "Purchase", icon: "cart", color: "#27ae60", route: "/purchase" },
+    { title: "Purchase Wise Sales", icon: "bar-chart", color: "#f39c12", route: "/purchase-wise-sales" },
+    { title: "Vendors Wise Purchase", icon: "people", color: "#9b59b6", route: "/vendors-wise-purchase" },
+    { title: "Live Sales", icon: "pulse", color: "#e67e22", route: "/livesales" },
+    { title: "Invoice", icon: "receipt", color: "#34495e", route: "/invoice" },
   ];
 
   const goToPage = (route: string) => {
@@ -36,182 +111,237 @@ export default function Home() {
     setLogoutVisible(true);
   };
 
-  // const logout = () => {
-  //   setLogoutVisible(false);
-  //   router.replace("/login" as any);
-  // };
   const logout = async () => {
-  setLogoutVisible(false);
-
-  try {
-    // 🔥 REMOVE USER DATA
-    await AsyncStorage.removeItem("user");
-
-    // 🔥 OPTIONAL: remove token if you stored
-    // await AsyncStorage.removeItem("token");
-
-    router.replace("/login");
-
-  } catch (error) {
-    console.log("LOGOUT ERROR:", error);
-  }
-};
+    setLogoutVisible(false);
+    try {
+      await AsyncStorage.removeItem("user");
+      router.replace("/login");
+    } catch (error) {
+      console.log("LOGOUT ERROR:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
-
-      {/* HEADER */}
       <Stack.Screen
         options={{
           title: "Home",
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#2c3e50", // Classic dark header
+          },
+          headerTintColor: "#ffffff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+            fontSize: 20,
+          },
           headerRight: () => (
-            <TouchableOpacity
-              onPress={confirmLogout}
-              style={{ marginRight: 5, padding: 10 }}
-            >
-              <Ionicons name="log-out-outline" size={24} color="white" />
+            <TouchableOpacity onPress={confirmLogout} style={styles.headerBtn}>
+              <Ionicons name="log-out-outline" size={24} color="#ffffff" />
             </TouchableOpacity>
-          )
+          ),
         }}
       />
 
-      {/* CARDS */}
+      <HeaderCard />
+
       <FlatList
         data={cards}
         keyExtractor={(item) => item.title}
-        contentContainerStyle={{ padding: 12 }}
+        contentContainerStyle={styles.listContainer}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-
           <TouchableOpacity
-            style={styles.card}
+            style={styles.cardWrapper}
             onPress={() => goToPage(item.route)}
+            activeOpacity={0.8}
           >
-
-            <View style={styles.cardLeft}>
-              <Ionicons name={item.icon as any} size={28} color={item.color} />
-              <Text style={styles.cardText}>{item.title}</Text>
+            <View style={[styles.card, { borderLeftColor: item.color }]}>
+              <View style={[styles.iconBox, { backgroundColor: item.color + "15" }]}>
+                <Ionicons name={item.icon as any} size={24} color={item.color} />
+              </View>
+              <Text style={styles.cardTitle} numberOfLines={2}>
+                {item.title}
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color="#bdc3c7" style={styles.chevron} />
             </View>
-
-            <Ionicons name="chevron-forward" size={22} color="#999" />
-
           </TouchableOpacity>
-
         )}
       />
 
-      {/* LOGOUT MODAL */}
+      {/* CLASSIC MODAL */}
       <Modal visible={logoutVisible} transparent animationType="fade">
-
-        <View style={styles.modalContainer}>
-
-          <View style={styles.modalBox}>
-
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Logout</Text>
-
-            <Text style={styles.modalText}>
-              Are you sure you want to logout?
-            </Text>
-
-            <View style={styles.modalButtons}>
-
+            <Text style={styles.modalMessage}>Are you sure you want to logout?</Text>
+            <View style={styles.modalActions}>
               <TouchableOpacity
-                style={styles.cancelBtn}
+                style={styles.modalBtnCancel}
                 onPress={() => setLogoutVisible(false)}
               >
-                <Text style={{ color: "white" }}>No</Text>
+                <Text style={styles.modalBtnCancelText}>NO</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.confirmBtn}
-                onPress={logout}
-              >
-                <Text style={{ color: "white" }}>Yes</Text>
+              <TouchableOpacity style={styles.modalBtnConfirm} onPress={logout}>
+                <Text style={styles.modalBtnConfirmText}>YES</Text>
               </TouchableOpacity>
-
             </View>
-
           </View>
-
         </View>
-
       </Modal>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
-    backgroundColor: "#f5f7ff"
+    backgroundColor: "#f4f6f8", // Very standard light gray background
   },
-
-  card: {
-    backgroundColor: "white",
-    padding: 30,
+  headerCard: {
+    // backgroundColor: "#ffffffff",
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    elevation: 3
+    borderColor: "#000000ff",
   },
-
-  cardLeft: {
+  userInfo: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
   },
-
-  cardText: {
-    marginLeft: 12,
-    fontSize: 16,
-    fontWeight: "600"
-  },
-
-  modalContainer: {
-    flex: 1,
+  userAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    shadowColor: "#000",
+    backgroundColor: "#ebf5fb",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)"
+    marginRight: 12,
   },
-
-  modalBox: {
-    width: 280,
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10
+  welcomeText: {
+    fontSize: 12,
+    color: "#5a6363ff",
   },
-
-  modalTitle: {
-    fontSize: 18,
+  userNameText: {
+    fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 10
+    color: "#2c3e50",
   },
-
-  modalText: {
-    marginBottom: 20
+  timeInfo: {
+    alignItems: "flex-end",
   },
-
-  modalButtons: {
+  timeText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#9f3b8bff",
+  },
+  dateText: {
+    fontSize: 12,
+    color: "#505858ff",
+  },
+  headerBtn: {
+    padding: 8,
+    marginRight: 4,
+  },
+  listContainer: {
+    paddingVertical: 8,
+    flexGrow: 1,
+  },
+  cardWrapper: {
+    marginHorizontal: 16,
+    marginVertical: 6,
+    borderRadius: 12,
+    backgroundColor: "transparent",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 16,
+    borderRadius: 12,
     flexDirection: "row",
-    justifyContent: "space-between"
+    alignItems: "center",
+    borderLeftWidth: 4,
+    overflow: "hidden",
   },
-
-  cancelBtn: {
-    backgroundColor: "#c12626",
-    padding: 10,
-    borderRadius: 6,
-    width: 80,
-    alignItems: "center"
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
   },
-
-  confirmBtn: {
-    backgroundColor: "#0f8e0f",
-    padding: 10,
-    borderRadius: 6,
-    width: 80,
-    alignItems: "center"
-  }
-
+  cardTitle: {
+    flex: 1,
+    fontSize: 16,
+    color: "#2c3e50",
+    fontWeight: "bold",
+  },
+  chevron: {
+    marginLeft: 8,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "80%",
+    backgroundColor: "#ffffff",
+    borderRadius: 8,
+    paddingTop: 24,
+    paddingBottom: 16,
+    paddingHorizontal: 24,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#000000",
+    marginBottom: 16,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: "#4b5563",
+    marginBottom: 32,
+  },
+  modalActions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+  },
+  modalBtnCancel: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+  },
+  modalBtnCancelText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#6b7280",
+  },
+  modalBtnConfirm: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  modalBtnConfirmText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#2c3e50",
+  },
 });

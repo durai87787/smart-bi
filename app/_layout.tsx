@@ -26,7 +26,7 @@
 //       </Stack>
 //       <StatusBar style="auto" />
 //     </ThemeProvider>
-    
+
 //   );
 // }
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -40,16 +40,20 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'light' ? DarkTheme : DefaultTheme}>
-      <Stack  screenOptions={{
-          headerStyle: {
-            backgroundColor: "#5b5c5c",   // toolbar color
-          },
-          headerTintColor: "#ffffff",     // icon + back button color
-          // headerTitleAlign: "center",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          }
-        }}
+      <Stack screenOptions={{
+        headerStyle: {
+          backgroundColor: "#2c3e50",
+          //backgroundColor: "#494949"
+
+
+        },
+        headerTintColor: "#ffffff",     // icon + back button color
+        // headerTitleAlign: "center",
+        headerTitleStyle: {
+          fontWeight: "bold",
+        }
+
+      }}
       >
         <Stack.Screen name="login" options={{ headerShown: false }} />
         {/* <Stack.Screen name="home" options={{ title: "Dashboard" }} /> */}
