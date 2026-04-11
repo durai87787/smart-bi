@@ -464,15 +464,19 @@ export default function PaymodeBreakup() {
           ))}
 
         </View>
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 300 }}>
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: 250 }}>
 
           {loading ? (
             <ActivityIndicator size="large" color="#007bff" />
           ) : error ? (
-            <Text>{error}</Text>
+            <Text style={{ color: "black" }}>{error}</Text>
           ) : filteredData.length === 0 ? (
-
-            <Text>No data found</Text>
+            <View style={{ justifyContent: "center", alignItems: "center" }}>
+              <Text >
+                <Ionicons name="alert-circle-outline" size={35} color="#515050ff" />
+              </Text>
+              <Text style={{ color: "black", fontSize: 15 }}>No data found</Text>
+            </View>
           ) : (
             // 👉 Your actual UI (FlatList / Table)
             <Text></Text>

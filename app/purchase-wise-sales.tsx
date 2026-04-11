@@ -420,7 +420,7 @@ export default function PurchaseWiseSales() {
         {/* DATA */}
         {departments.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Ionicons name="alert-circle-outline" size={40} color="#999" />
+            <Ionicons name="alert-circle-outline" size={35} color="#515050ff" />
             <Text style={styles.emptyText}>No Purchase Data</Text>
           </View>
         ) : (
@@ -575,12 +575,12 @@ const styles = StyleSheet.create({
 
   emptyContainer: {
     alignItems: "center",
-    marginTop: 80
+    marginTop: 250
   },
 
   emptyText: {
-    fontSize: 18,
-    color: "#555"
+    fontSize: 15,
+    color: "#222222ff"
   },
   dotContainer: {
     flexDirection: "row",

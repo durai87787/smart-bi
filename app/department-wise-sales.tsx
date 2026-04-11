@@ -269,7 +269,6 @@ export default function DepartmentWiseSales() {
 
   const goToInventory = (br: any, cat: any, dept: any) => {
     console.log("CLICK DATA:", br, cat, dept); // 🔥 debug
-
     router.push({
       pathname: "/inventory-list", // ⚠️ make sure file name matches
       params: {
