@@ -1,5 +1,8 @@
+import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
 import { LinearGradient } from "expo-linear-gradient";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,10 +14,6 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
-import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Stack, useRouter } from "expo-router";
 import { PieChart } from "react-native-chart-kit";
 import { BarChart as GiftedBarChart } from "react-native-gifted-charts";
 import { BASE_URL } from "./config/api";
@@ -439,6 +438,7 @@ export default function Dashboard() {
 
               return (
 
+
                 <TouchableOpacity
                   key={index}
                   onPress={() => {
@@ -446,6 +446,7 @@ export default function Dashboard() {
                     console.log("Selected Location ID:", id);
                   }}
                 >
+
                   <LinearGradient
                     key={index}
                     colors={colors as readonly [string, string]} // ✅ fix TS error
@@ -469,8 +470,8 @@ export default function Dashboard() {
 
           </ScrollView>
           <View style={{ alignItems: "center" }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#ab109eff" }}>
-              {labelName}
+            <Text style={{ fontSize: 15, fontWeight: "bold", color: "#ab109eff" }}>
+              Location : {labelName}
             </Text>
           </View>
           {/* KPI Cards */}
@@ -502,34 +503,106 @@ export default function Dashboard() {
               return (
 
                 <View key={index} style={styles.cardWrapper}>
+                  {/* <TouchableOpacity
+                    activeOpacity={item.Name === "Total Sales" ? 0.7 : 1}
+                    onPress={() => {
+                      if (item.Name === "Total Sales") {
+                        router.push({
+                          pathname: "/department-wise-sales",
+                          params: {
+                            totalSales: item.Total,
+                            fromDate: formatDate(fromDate),
+                            toDate: formatDate(toDate),
+                          },
+                        });
+                      }
+                    }}
+                  > */}
+                  <TouchableOpacity
+                    activeOpacity={
+                      item.Name?.toLowerCase().includes("total sales") ||
+                        item.Name?.toLowerCase().includes("total purchase")
+                        ? 0.7
+                        : 1
+                    }
+                    onPress={() => {
+                      const name = item.Name?.toLowerCase();
 
-                  {/* 🔥 Gradient Card */}
-                  <LinearGradient
-                    colors={colors as [string, string]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.premiumCard}
+                      // 👉 Total Sales Click
+                      if (name.includes("total sales")) {
+                        router.push({
+                          pathname: "/department-wise-sales",
+                          params: {
+                            totalSales: item.Total,
+                            fromDate: formatDate(fromDate),
+                            toDate: formatDate(toDate),
+                          },
+                        });
+                      }
+
+                      // 👉 Total Purchase Click
+                      if (name.includes("total purchase")) {
+                        router.push({
+                          pathname: "/purchase", // 👈 your purchase page
+                          params: {
+                            totalPurchase: item.Total,
+                            fromDate: formatDate(fromDate),
+                            toDate: formatDate(toDate),
+                          },
+                        });
+                      }
+                    }}
                   >
 
-                    {/* ✨ Glass shine effect */}
-                    <View style={styles.shine} />
+                    {/* 🔥 Gradient Card */}
+                    <LinearGradient
+                      colors={colors as [string, string]}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.premiumCard}
+                    >
 
-                    <Text style={styles.cardTitle1}>{item.Name}</Text>
+                      {/* ✨ Glass shine effect */}
+                      <View style={styles.shine} />
 
-                    <Text style={styles.amount1}>
-                      ₹ {Number(item.Total).toLocaleString()}
-                    </Text>
+                      <Text style={styles.cardTitle1}>{item.Name}</Text>
 
-                  </LinearGradient>
+                      <Text style={styles.amount1}>
+                        ₹ {Number(item.Total).toLocaleString()}
+                      </Text>
+
+                    </LinearGradient>
+                  </TouchableOpacity>
+
                 </View>
+
               );
             })}
+
           </ScrollView>
 
           {/* Pie Chart */}
           <View style={styles.chartCard}>
 
+            {/* 🔘 BUTTON (LEFT TOP) */}
+            <TouchableOpacity
+              style={styles.payBtn}
+              onPress={() => {
+                router.push({
+                  pathname: "/paymode-breakup",
+                  params: {
+                    loctCode: selectedLocation || "",             // ✅ send location
+                    FromDate: formatDate(fromDate), // ✅ send date
+                    ToDate: formatDate(toDate),
+                  },
+                });
+              }}
+            >
+              <Ionicons name="pie-chart-outline" size={20} color="#010101ff" />
+            </TouchableOpacity>
+
             <Text style={styles.chartTitle}>Payment Mode</Text>
+
             <PieChart
               data={pieData}
               width={screenWidth - 10}
@@ -550,6 +623,7 @@ export default function Dashboard() {
                 }
               }}
             />
+
           </View>
           {/* Bar Chart */}
           {animatedBarData.length > 0 && (
@@ -590,6 +664,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f3f4f6"
+  },
+  payBtn: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+    backgroundColor: "#ffffffff",
+    padding: 8,
+    borderRadius: 20,
+    zIndex: 10,
   },
 
   loader: {
@@ -823,13 +906,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-
-
-
-
-
-
-
   scrollContainer: {
     paddingHorizontal: 10,
     alignItems: "center",

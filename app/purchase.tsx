@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+    ActivityIndicator,
     Platform,
     ScrollView,
     StyleSheet,
@@ -371,9 +372,36 @@ export default function Purchase() {
 
                 {/* Dashboard Cards */}
 
+                {loading ? (
+                    <View style={{ marginTop: 50 }}>
+                        <ActivityIndicator size="large" color="#007bff" />
+                    </View>
+                ) : (
+                    <View style={styles.cardContainer}>
+                        {Array.isArray(data) &&
+                            data.map((item: any, index: number) => {
+                                const colors = gradients[index % gradients.length];
 
+                                return (
+                                    <LinearGradient
+                                        key={index}
+                                        colors={colors}
+                                        style={styles.card}
+                                    >
+                                        <Text style={styles.cardTitle}>{item.Name}</Text>
 
-                <View style={styles.cardContainer}>
+                                        <Text style={styles.cardValue}>
+                                            {item.Name?.toLowerCase().includes("purchase")
+                                                ? `${Number(item.Total ?? 0).toLocaleString()}`
+                                                : item.Total ?? 0}
+                                        </Text>
+                                    </LinearGradient>
+                                );
+                            })}
+                    </View>
+                )}
+
+                {/* <View style={styles.cardContainer}>
                     {Array.isArray(data) &&
                         data.map((item: any, index: number) => {
                             const colors = gradients[index % gradients.length];
@@ -394,7 +422,7 @@ export default function Purchase() {
                                 </LinearGradient>
                             );
                         })}
-                </View>
+                </View> */}
 
             </ScrollView>
 

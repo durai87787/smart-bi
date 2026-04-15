@@ -153,43 +153,52 @@ export default function InvoiceList() {
   }, []);
 
   const renderItem = ({ item }: any) => (
-    <View style={styles.card}>
-      <Text style={styles.invoiceNo}>
-        Invoice # : {item.InvoiceNo}
-      </Text>
-
-      <View style={styles.row}>
-        <Text style={styles.location}>
-          Location: {item.LocationCode}
+    <TouchableOpacity
+      onPress={() => {
+        router.push({
+          pathname: "/invoicereceipt",
+          params: { invoiceNo: item.InvoiceNo },
+        });
+      }}
+    >
+      <View style={styles.card}>
+        <Text style={styles.invoiceNo}>
+          Invoice # : {item.InvoiceNo}
         </Text>
 
-        <Text style={styles.date}>
-          {item.DateTime}
+        <View style={styles.row}>
+          <Text style={styles.location}>
+            Location: {item.LocationCode}
+          </Text>
+
+          <Text style={styles.date}>
+            {item.DateTime}
+          </Text>
+
+          <Text style={styles.total}>
+            ${item.NetTotal}
+          </Text>
+        </View>
+
+        <View style={styles.line} />
+
+        <Text style={styles.payTitle}>
+          Paymodes:
         </Text>
 
-        <Text style={styles.total}>
-          ${item.NetTotal}
-        </Text>
+        <View style={styles.row}>
+          <Ionicons name="card-outline" size={22} color="#444" />
+
+          <Text style={styles.paymode}>
+            {item.Paymode}
+          </Text>
+
+          <Text style={styles.amount}>
+            ${item.Amount}
+          </Text>
+        </View>
       </View>
-
-      <View style={styles.line} />
-
-      <Text style={styles.payTitle}>
-        Paymodes:
-      </Text>
-
-      <View style={styles.row}>
-        <Ionicons name="card-outline" size={22} color="#444" />
-
-        <Text style={styles.paymode}>
-          {item.Paymode}
-        </Text>
-
-        <Text style={styles.amount}>
-          ${item.Amount}
-        </Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

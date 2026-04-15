@@ -65,7 +65,8 @@ const HeaderCard = () => {
   return (
     // <View style={styles.headerCard}>
     <LinearGradient
-      colors={["#ff9a9e", "#fad0c4", "#a18cd1", "#a18cd1",]}  // 🔥 3 colors
+      colors={["#f7f7f7ff", "#ffffffff", "#fdfdfdff", "#ffffffff",]}
+      // colors={["#ff9a9e", "#fad0c4", "#a18cd1", "#a18cd1",]}  // 🔥 3 colors
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }} // horizontal
       style={styles.headerCard}
@@ -201,19 +202,19 @@ const styles = StyleSheet.create({
   headerCard: {
     // backgroundColor: "#ffffffff",
     marginHorizontal: 16,
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: 12,
+    marginBottom: 1,
     padding: 16,
     borderRadius: 12,
     elevation: 2,
-    shadowColor: "#000",
+    shadowColor: "#200917ff",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowOpacity: 10,
+    shadowRadius: 3,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderColor: "#000000ff",
+    // borderColor: "#000000ff",
   },
   userInfo: {
     flexDirection: "row",

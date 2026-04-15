@@ -11,16 +11,21 @@ import {
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { BASE_URL } from "./config/api";
 
 type PaymodeItem = {
   Paymode: string;
-  Code: string; // ✅ added
+  Code: string;
   TotalAmount: number;
 };
 
 export default function PaymodeBreakup() {
+  const params = useLocalSearchParams();
+  const loctCode = String(params.loctCode || "");
+  const FromDate = String(params.FromDate || "");
+  const ToDate = String(params.ToDate || "");
+  console.log('check', loctCode, FromDate, ToDate);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

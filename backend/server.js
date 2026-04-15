@@ -769,6 +769,33 @@ app.post("/invoice-list", async (req, res) => {
 
 });
 
+// invoice details 
+
+app.get("/api/invoice-details", async (req, res) => {
+  try {
+    const { invoiceNo } = req.query;
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("InvoiceNo", sql.NVarChar, invoiceNo)
+      .execute("sp_GetInvoiceDetails");
+
+    // 🔥 Important: multiple recordsets
+    const header = result.recordsets[0][0];   // first table
+    const items = result.recordsets[1];       // second table
+
+    res.json({
+      header,
+      items,
+    });
+
+  } catch (err) {
+    console.error("INVOICE ERROR:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 app.post("/vendor-purchase", async (req, res) => {
   try {
@@ -803,6 +830,39 @@ app.post("/vendor-purchase", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+//vendor details
+app.get("/api/vendor-details", async (req, res) => {
+  try {
+    const { vendorCode, fromDate, toDate } = req.query;
+
+    const pool = await poolPromise;
+
+    const result = await pool.request()
+      .input("vendorCode", sql.NVarChar, vendorCode)
+      .input("FromDate", sql.DateTime, new Date(fromDate))
+      .input("ToDate", sql.DateTime, new Date(toDate))
+      .query(`
+        SELECT 
+          GidNo AS Gid,
+          GidDate AS Date,
+          SUM(NetTotal) AS Cost
+        FROM tblPurchaseGidHeader
+        WHERE 
+          GidDate BETWEEN @FromDate AND @ToDate
+          AND VendorCode = @vendorCode
+        GROUP BY GidNo, GidDate
+        ORDER BY GidDate DESC
+      `);
+
+    res.json(result.recordset);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Server Error");
+  }
+});
+
 
 
 // ================= PORT =================
