@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Stack, useRouter } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Platform,
@@ -58,6 +58,27 @@ const getMonthRange = () => {
 };
 
 export default function DepartmentWiseSales() {
+  const params = useLocalSearchParams();
+
+  const getParam = (val: any) =>
+    Array.isArray(val) ? val[0] : val || "";
+
+  const loctCode = getParam(params.loctCode);
+  const totalSales = getParam(params.totalSales);
+  const paramFromDate = getParam(params.fromDate);
+  const paramToDate = getParam(params.toDate);
+  if (loctCode === "") {
+    const [fromDate, setFromDate] = useState(getToday());
+    const [toDate, setToDate] = useState(getToday());
+    console.log('1');
+
+  } else {
+    const fromDate = getParam(params.fromDate);
+    const toDate = getParam(params.toDate);
+    console.log('2');
+  }
+
+  console.log(loctCode, totalSales, paramFromDate, paramToDate);
 
   const [departments, setDepartments] = useState<Item[]>([]);
   const [categories, setCategories] = useState<{ [key: string]: Item[] }>({});
@@ -136,7 +157,7 @@ export default function DepartmentWiseSales() {
         body: JSON.stringify({
           FromDate: formatDate(fromDate),
           ToDate: formatDate(toDate),
-          loctCode: ""
+          loctCode: loctCode || ""
         })
       });
 
@@ -179,7 +200,7 @@ export default function DepartmentWiseSales() {
         body: JSON.stringify({
           FromDate: formatDate(fromDate),
           ToDate: formatDate(toDate),
-          loctCode: "",
+          loctCode: loctCode || "",
           DeptCode: deptCode
         })
       });
@@ -229,7 +250,7 @@ export default function DepartmentWiseSales() {
         body: JSON.stringify({
           FromDate: formatDate(fromDate),
           ToDate: formatDate(toDate),
-          loctCode: "",
+          loctCode: loctCode || "",
           DeptCode: deptCode,
           CatCode: catCode
         })

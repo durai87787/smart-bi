@@ -159,6 +159,7 @@ export default function Dashboard() {
   const getLocationId = (item: any) => {
     console.log(item.LocationCode);
     setLabelName(item.LocationName);
+    setSelectedLocation(item.LocationCode);
     loadDashboard(item.LocationCode);
     return item.LocationCode ?? 0;
   };
@@ -469,11 +470,19 @@ export default function Dashboard() {
             )}
 
           </ScrollView>
-          <View style={{ alignItems: "center" }}>
+          <View style={styles.locationContainer}>
+            <Text style={styles.locationText}>
+              Location <Text style={styles.locationDot}>
+                {/* • */}
+                <Ionicons name="location-sharp" size={12} color="#ab1010ff" />
+              </Text> {labelName}
+            </Text>
+          </View>
+          {/* <View style={{ alignItems: "center" }}>
             <Text style={{ fontSize: 15, fontWeight: "bold", color: "#ab109eff" }}>
               Location : {labelName}
             </Text>
-          </View>
+          </View> */}
           {/* KPI Cards */}
           {/* <View style={styles.grid}>
             {buttons.map((item, index) => (
@@ -533,6 +542,7 @@ export default function Dashboard() {
                         router.push({
                           pathname: "/department-wise-sales",
                           params: {
+                            loctCode: selectedLocation || "",
                             totalSales: item.Total,
                             fromDate: formatDate(fromDate),
                             toDate: formatDate(toDate),
@@ -870,7 +880,7 @@ const styles = StyleSheet.create({
 
   premiumCard: {
     width: 180,
-    height: 100,
+    height: 95,
     padding: 13,
     borderRadius: 15,
     justifyContent: "space-between",
@@ -928,7 +938,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 
+  locationContainer: {
+    alignItems: "center",
+    marginVertical: 6,
+  },
 
+  locationText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#222",
+    letterSpacing: 0.5,
+  },
+
+  locationDot: {
+    color: "#ab109e",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 
 
 });
